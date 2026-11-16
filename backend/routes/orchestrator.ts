@@ -1,11 +1,11 @@
 import Stripe from "stripe";
-import { serverDb } from "../lib/db";
-import { generateAIContent, generateStructuredContent } from "../lib/ai";
-import { sendEmail, buildOutreachEmail } from "../lib/email";
-import { discoverLeadsFromMaps, discoverLeadsViaAI, scoreLeadFromPresence } from "../lib/maps";
-import { discoverIntentLeads } from "../lib/intentDiscovery";
-import { findOrCreateCustomer, createAndFinalizeInvoice } from "../lib/stripeInvoice";
-import { BACKEND_URL } from "../lib/config";
+import { serverDb } from "../lib/db.js";
+import { generateAIContent, generateStructuredContent } from "../lib/ai.js";
+import { sendEmail, buildOutreachEmail } from "../lib/email.js";
+import { discoverLeadsFromMaps, discoverLeadsViaAI, scoreLeadFromPresence } from "../lib/maps.js";
+import { discoverIntentLeads } from "../lib/intentDiscovery.js";
+import { findOrCreateCustomer, createAndFinalizeInvoice } from "../lib/stripeInvoice.js";
+import { BACKEND_URL } from "../lib/config.js";
 
 export async function runOrchestration(
   env: Record<string, string>,

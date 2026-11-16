@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import { waitUntil } from "@vercel/functions";
-import backend from "../backend/index";
+import backend from "../backend/index.js";
 
 // Vercel entry point: every /api/* request is served by the Hono backend.
 // Routes read secrets from c.env, so expose process.env there, and provide

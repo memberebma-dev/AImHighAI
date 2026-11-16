@@ -1,4 +1,4 @@
-import { serverDb } from "./db";
+import { serverDb } from "./db.js";
 
 /**
  * Verifies the caller's Supabase access token server-side and returns their

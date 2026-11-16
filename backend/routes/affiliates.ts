@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { serverDb } from "../lib/db";
-import { requireOwner } from "../lib/auth";
+import { serverDb } from "../lib/db.js";
+import { requireOwner } from "../lib/auth.js";
 
 const affiliatesApp = new Hono<{ Bindings: Record<string, string> }>();
 

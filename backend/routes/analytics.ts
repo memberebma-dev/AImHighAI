@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { serverDb } from "../lib/db";
-import { requireUserId } from "../lib/auth";
+import { serverDb } from "../lib/db.js";
+import { requireUserId } from "../lib/auth.js";
 
 const analyticsApp = new Hono<{ Bindings: Record<string, string> }>();
 

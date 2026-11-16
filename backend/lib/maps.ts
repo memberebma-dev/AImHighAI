@@ -1,6 +1,6 @@
 // Google Maps Places API — real lead discovery + web presence scoring
 
-import { generateAIContent } from "./ai";
+import { generateAIContent } from "./ai.js";
 
 export interface PlaceResult {
   companyName: string;

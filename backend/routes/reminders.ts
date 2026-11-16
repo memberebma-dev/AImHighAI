@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { serverDb } from "../lib/db";
-import { sendEmail } from "../lib/email";
-import { requireUserId } from "../lib/auth";
+import { serverDb } from "../lib/db.js";
+import { sendEmail } from "../lib/email.js";
+import { requireUserId } from "../lib/auth.js";
 
 const remindersApp = new Hono<{ Bindings: Record<string, string> }>();
 

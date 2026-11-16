@@ -1,15 +1,15 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { serverDb } from "./lib/db";
-import { runOrchestration } from "./routes/orchestrator";
-import { generateAIContent } from "./lib/ai";
-import { sendEmail, buildOutreachEmail } from "./lib/email";
-import { requireUserId } from "./lib/auth";
-import analyticsApp from "./routes/analytics";
-import affiliatesApp from "./routes/affiliates";
-import remindersApp from "./routes/reminders";
-import emailWebhookApp from "./routes/emailWebhook";
-import previewApp from "./routes/preview";
+import { serverDb } from "./lib/db.js";
+import { runOrchestration } from "./routes/orchestrator.js";
+import { generateAIContent } from "./lib/ai.js";
+import { sendEmail, buildOutreachEmail } from "./lib/email.js";
+import { requireUserId } from "./lib/auth.js";
+import analyticsApp from "./routes/analytics.js";
+import affiliatesApp from "./routes/affiliates.js";
+import remindersApp from "./routes/reminders.js";
+import emailWebhookApp from "./routes/emailWebhook.js";
+import previewApp from "./routes/preview.js";
 
 const app = new Hono<{ Bindings: Record<string, string> }>();
 app.use("*", cors());
@@ -107,7 +107,7 @@ app.route("/reminders", remindersApp);
 app.route("/webhooks/email", emailWebhookApp);
 app.route("/preview", previewApp);
 
-import stripeApp from "./stripe";
+import stripeApp from "./stripe.js";
 app.route("/stripe", stripeApp);
 
 export default app;

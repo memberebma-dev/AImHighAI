@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { makeDb } from "../../shared/dbAdapter";
+import { makeDb } from "../../shared/dbAdapter.js";
 
 /**
  * Server-side database handle (replaces Blink's createClient). Uses the

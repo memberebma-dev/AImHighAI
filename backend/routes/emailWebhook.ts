@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { serverDb } from "../lib/db";
+import { serverDb } from "../lib/db.js";
 
 const emailWebhookApp = new Hono<{ Bindings: Record<string, string> }>();
 

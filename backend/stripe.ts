@@ -1,9 +1,9 @@
 import Stripe from 'stripe';
 import { Hono } from 'hono';
-import { serverDb } from "./lib/db";
-import { createAndFinalizeInvoice } from './lib/stripeInvoice';
-import { trackAffiliateConversion } from './routes/affiliates';
-import { requireUserId, requireOwner } from './lib/auth';
+import { serverDb } from "./lib/db.js";
+import { createAndFinalizeInvoice } from './lib/stripeInvoice.js';
+import { trackAffiliateConversion } from './routes/affiliates.js';
+import { requireUserId, requireOwner } from './lib/auth.js';
 
 const stripeApp = new Hono<{ Bindings: Record<string, string> }>();
 
