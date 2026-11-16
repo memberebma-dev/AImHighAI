@@ -1,6 +1,7 @@
 import { blink } from '@/lib/blink'
 
-export const BACKEND_URL = 'https://dimg0s7y.backend.blink.new'
+// Backend runs as a Vercel function on the same domain, under /api.
+export const BACKEND_URL = `${window.location.origin}/api`
 export const ORCHESTRATOR_URL = `${BACKEND_URL}/orchestrator`
 
 /**

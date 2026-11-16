@@ -33,7 +33,7 @@ import { useStartAgent, useAgentRuns } from '@/store/pipeline-store'
 import { toast } from 'sonner'
 import { blink } from '@/lib/blink'
 import { useQueryClient } from '@tanstack/react-query'
-import { useBlinkAuth } from '@blinkdotnew/react'
+import { useBlinkAuth } from '@/lib/auth-context'
 
 export function OutreachPage() {
   const { data: leads } = useLeads()

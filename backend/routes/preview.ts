@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { createClient } from "@blinkdotnew/sdk";
+import { serverDb } from "../lib/db";
 
 const previewApp = new Hono<{ Bindings: Record<string, string> }>();
 
@@ -192,7 +192,7 @@ function renderLegacyText(title: string, content: string): string {
 
 previewApp.get("/audit/:leadId", async (c) => {
   const env = c.env as Record<string, string>;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   const leadId = c.req.param("leadId");
   const leads = (await blink.db.leads.list({ where: { id: leadId }, limit: 1 })) as any[];
   const lead = leads[0];
@@ -212,7 +212,7 @@ previewApp.get("/audit/:leadId", async (c) => {
 
 previewApp.get("/site/:leadId", async (c) => {
   const env = c.env as Record<string, string>;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   const leadId = c.req.param("leadId");
   const leads = (await blink.db.leads.list({ where: { id: leadId }, limit: 1 })) as any[];
   const lead = leads[0];

@@ -13,7 +13,7 @@ import { PrivacyPolicy, TermsConditions } from '@/pages/Legal'
 import { AnalyticsPage } from '@/pages/Analytics'
 import { AffiliatesPage } from '@/pages/Affiliates'
 import { InvoiceRemindersPage } from '@/pages/InvoiceReminders'
-import { useBlinkAuth } from '@blinkdotnew/react'
+import { useBlinkAuth } from '@/lib/auth-context'
 import { blink } from '@/lib/blink'
 import { Button } from '@/components/ui/button'
 import { Loader2, LogOut, Zap, CheckCircle2, ExternalLink, ShieldAlert } from 'lucide-react'
@@ -53,6 +53,44 @@ function OwnerOnlyGate({ children }: { children: React.ReactNode }) {
     )
   }
   return <>{children}</>
+}
+
+function LoginForm() {
+  const [email, setEmail] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  if (sent) {
+    return <p className="text-teal-400 text-sm">Check {email} for your sign-in link.</p>
+  }
+  return (
+    <form
+      className="space-y-3"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        setSending(true)
+        try {
+          await blink.auth.login(email.trim())
+          setSent(true)
+        } catch (err: any) {
+          toast.error(err.message || 'Could not send sign-in link')
+        } finally {
+          setSending(false)
+        }
+      }}
+    >
+      <input
+        type="email"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@email.com"
+        className="w-full h-12 rounded-md bg-slate-900 border border-slate-700 px-4 text-white"
+      />
+      <Button type="submit" disabled={sending} className="w-full h-12 bg-teal-600 hover:bg-teal-500 text-lg font-semibold">
+        {sending ? 'Sending…' : 'Email me a sign-in link'}
+      </Button>
+    </form>
+  )
 }
 
 function App() {
@@ -98,12 +136,7 @@ function App() {
             </p>
           </div>
           <div className="space-y-4">
-            <Button
-              className="w-full h-12 bg-teal-600 hover:bg-teal-500 text-lg font-semibold"
-              onClick={() => blink.auth.login(window.location.href)}
-            >
-              Access Engine
-            </Button>
+            <LoginForm />
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-left">
                 <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Offerings</p>
@@ -280,7 +313,7 @@ function SettingsPage() {
               variant="outline"
               size="sm"
               className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10"
-              onClick={() => blink.auth.logout()}
+              onClick={() => blink.auth.logout().catch((e: Error) => toast.error(e.message))}
             >
               <LogOut className="w-4 h-4" />
               Sign Out

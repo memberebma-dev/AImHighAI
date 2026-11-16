@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { createClient } from "@blinkdotnew/sdk";
+import { serverDb } from "../lib/db";
 
 const emailWebhookApp = new Hono<{ Bindings: Record<string, string> }>();
 
@@ -16,7 +16,7 @@ const SENDGRID_EVENT_MAP: Record<string, string> = {
 
 emailWebhookApp.post("/sendgrid", async (c) => {
   const env = c.env as Record<string, string>;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   try {
     const events = (await c.req.json()) as any[];
     let recorded = 0;
@@ -56,7 +56,7 @@ const RESEND_EVENT_MAP: Record<string, string> = {
 
 emailWebhookApp.post("/resend", async (c) => {
   const env = c.env as Record<string, string>;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   try {
     const body = (await c.req.json()) as any;
     const mapped = RESEND_EVENT_MAP[body.type];

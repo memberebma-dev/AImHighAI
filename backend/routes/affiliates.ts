@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { createClient } from "@blinkdotnew/sdk";
+import { serverDb } from "../lib/db";
 import { requireOwner } from "../lib/auth";
 
 const affiliatesApp = new Hono<{ Bindings: Record<string, string> }>();
@@ -11,7 +11,7 @@ affiliatesApp.get("/", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 403);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   try {
     const affiliates = await blink.db.affiliates.list({ orderBy: { createdAt: "desc" }, limit: 100 });
     return c.json(affiliates);
@@ -27,7 +27,7 @@ affiliatesApp.post("/", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 403);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   try {
     const body = await c.req.json();
     const slug = (body.name || "aff").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -50,7 +50,7 @@ affiliatesApp.patch("/:id/deactivate", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 403);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   try {
     await blink.db.affiliates.update(c.req.param("id"), { status: "inactive" });
     return c.json({ success: true });
@@ -66,7 +66,7 @@ affiliatesApp.delete("/:id", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 403);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   const id = c.req.param("id");
   try {
     const referrals = (await blink.db.affiliateReferrals.list({ where: { affiliateId: id }, limit: 500 })) as any[];
@@ -118,7 +118,7 @@ export async function trackAffiliateConversion(
 // affiliate referral link, not by a logged-in AgentOrch user.
 affiliatesApp.post("/track", async (c) => {
   const env = c.env as Record<string, string>;
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   try {
     const body = await c.req.json();
     const result = await trackAffiliateConversion(blink, body);

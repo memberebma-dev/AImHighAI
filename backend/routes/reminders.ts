@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { createClient } from "@blinkdotnew/sdk";
+import { serverDb } from "../lib/db";
 import { sendEmail } from "../lib/email";
 import { requireUserId } from "../lib/auth";
 
@@ -13,7 +13,7 @@ remindersApp.post("/run", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 401);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   const hasEmailProvider = !!(env.SENDGRID_API_KEY || env.RESEND_API_KEY);
 
   try {
@@ -74,7 +74,7 @@ remindersApp.get("/", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 401);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   try {
     const reminders = await blink.db.invoiceReminders.list({ where: { userId }, orderBy: { createdAt: "desc" }, limit: 100 });
     return c.json(reminders);

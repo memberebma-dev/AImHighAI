@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { createClient } from "@blinkdotnew/sdk";
+import { serverDb } from "./lib/db";
 import { runOrchestration } from "./routes/orchestrator";
 import { generateAIContent } from "./lib/ai";
 import { sendEmail, buildOutreachEmail } from "./lib/email";
@@ -52,7 +52,7 @@ app.post("/smart-followup", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 401);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   const body = await c.req.json().catch(() => ({} as any));
   const windowHours = Number(body?.windowHours) > 0 ? Number(body.windowHours) : 24;
   const threshold = Number.isFinite(body?.threshold) ? Number(body.threshold) : 60;

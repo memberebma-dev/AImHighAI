@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { createClient } from "@blinkdotnew/sdk";
+import { serverDb } from "../lib/db";
 import { generateAIContent, generateStructuredContent } from "../lib/ai";
 import { sendEmail, buildOutreachEmail } from "../lib/email";
 import { discoverLeadsFromMaps, discoverLeadsViaAI, scoreLeadFromPresence } from "../lib/maps";
@@ -12,7 +12,7 @@ export async function runOrchestration(
   userId: string,
   body: { runId: string; agentName: string; leadId?: string; niche?: string; location?: string; amount?: number; threshold?: number }
 ) {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   const mapsKey = env.GOOGLE_MAPS_API_KEY || "";
   const stripeKey = env.STRIPE_SECRET_KEY || "";
   const hasEmailProvider = !!(env.SENDGRID_API_KEY || env.RESEND_API_KEY);
@@ -236,7 +236,7 @@ export async function runOrchestration(
     await updateRun("success", 100, `${agentName} executed.`);
   } catch (error: any) {
     console.error("Orchestration error:", error);
-    try { const b2 = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY }); await b2.db.agentRuns.update(runId, { status: "failed", progressPercent: 0, logsText: `Error: ${error.message}`, finishedAt: new Date().toISOString() }); } catch {}
+    try { const b2 = serverDb(env); await b2.db.agentRuns.update(runId, { status: "failed", progressPercent: 0, logsText: `Error: ${error.message}`, finishedAt: new Date().toISOString() }); } catch {}
   }
 }
 

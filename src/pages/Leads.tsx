@@ -43,7 +43,7 @@ import { toast } from 'sonner'
 import { LeadStatus } from '@/types/pipeline'
 import { blink } from '@/lib/blink'
 import { useQueryClient } from '@tanstack/react-query'
-import { useBlinkAuth } from '@blinkdotnew/react'
+import { useBlinkAuth } from '@/lib/auth-context'
 
 export function LeadsPage() {
   const { data: leads, isLoading } = useLeads()

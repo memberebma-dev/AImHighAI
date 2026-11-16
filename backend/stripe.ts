@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { Hono } from 'hono';
-import { createClient } from '@blinkdotnew/sdk';
+import { serverDb } from "./lib/db";
 import { createAndFinalizeInvoice } from './lib/stripeInvoice';
 import { trackAffiliateConversion } from './routes/affiliates';
 import { requireUserId, requireOwner } from './lib/auth';
@@ -157,7 +157,7 @@ stripeApp.post('/create-one-off-invoice', async (c) => {
     // up by /reminders/run, and get marked paid by the Stripe webhook — otherwise
     // they only exist in Stripe and are invisible to the rest of the app.
     try {
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+      const blink = serverDb(env);
       await blink.db.invoices.create({
         id: crypto.randomUUID(),
         userId: ownerId,
@@ -191,7 +191,7 @@ stripeApp.post('/webhook', async (c) => {
   try {
     if (event.type === 'invoice.paid' || event.type === 'invoice.payment_succeeded') {
       const stripeInvoice = event.data.object as Stripe.Invoice;
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+      const blink = serverDb(env);
       const matches = await blink.db.invoices.list({ where: { stripeInvoiceId: stripeInvoice.id }, limit: 1 }) as any[];
       const localInvoice = matches[0];
       if (localInvoice && localInvoice.status !== 'paid') {
@@ -220,7 +220,7 @@ stripeApp.post('/webhook', async (c) => {
       // from client input directly).
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === 'subscription') {
-        const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+        const blink = serverDb(env);
         await blink.db.subscribers.create({
           id: crypto.randomUUID(),
           userId: session.metadata?.userId || '',
@@ -232,14 +232,14 @@ stripeApp.post('/webhook', async (c) => {
       }
     } else if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object as Stripe.Subscription;
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+      const blink = serverDb(env);
       const matches = await blink.db.subscribers.list({ where: { stripeSubscriptionId: subscription.id }, limit: 1 }) as any[];
       if (matches[0]) {
         await blink.db.subscribers.update(matches[0].id, { status: event.type === 'customer.subscription.deleted' ? 'canceled' : subscription.status });
       }
     } else if (event.type === 'invoice.voided' || event.type === 'invoice.marked_uncollectible') {
       const stripeInvoice = event.data.object as Stripe.Invoice;
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+      const blink = serverDb(env);
       const matches = await blink.db.invoices.list({ where: { stripeInvoiceId: stripeInvoice.id }, limit: 1 }) as any[];
       const localInvoice = matches[0];
       if (localInvoice) {

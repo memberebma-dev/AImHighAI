@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useLeads, useAgentRuns } from '@/store/pipeline-store';
-import { useBlinkAuth } from '@blinkdotnew/react';
+import { useBlinkAuth } from '@/lib/auth-context';
 import { isPlatformOwner } from '@/lib/auth';
 import { 
   LayoutDashboard, 

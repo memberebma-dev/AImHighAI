@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { CheckIcon, Loader2, DollarSign, Users, Receipt } from "lucide-react";
 import { toast } from 'sonner';
-import { useBlinkAuth } from '@blinkdotnew/react';
+import { useBlinkAuth } from '@/lib/auth-context';
 import { BACKEND_URL, authedFetch } from '@/lib/api';
 import { useSubscribers, usePipelineStats, useInvoices } from '@/store/pipeline-store';
 
