@@ -3,8 +3,9 @@ import { serverDb } from "../lib/db.js";
 import { generateAIContent, generateStructuredContent } from "../lib/ai.js";
 import { sendEmail, buildOutreachEmail } from "../lib/email.js";
 import { discoverLeadsFromMaps, discoverLeadsViaAI, scoreLeadFromPresence } from "../lib/maps.js";
+import { matchOffer, firstYearValue } from "../lib/offers.js";
 import { discoverIntentLeads } from "../lib/intentDiscovery.js";
-import { findOrCreateCustomer, createAndFinalizeInvoice } from "../lib/stripeInvoice.js";
+import { findOrCreateCustomer, createAndFinalizeInvoice, createRetainerSubscription } from "../lib/stripeInvoice.js";
 import { BACKEND_URL } from "../lib/config.js";
 
 export async function runOrchestration(
@@ -30,7 +31,7 @@ export async function runOrchestration(
   try {
     // ─── Lead Discovery (Google Maps → AI fallback) ───────────────────────────
     if (agentName === "Lead Discovery") {
-      const niche = body.niche || "commercial bridge lender";
+      const niche = body.niche || "plumber";
       const location = body.location || "Southern California";
       await updateRun("running", 10, `Searching for "${niche}" in "${location}"...`);
       const excludeNames = await fetchExistingCompanyNames(blink, userId);
@@ -49,7 +50,7 @@ export async function runOrchestration(
       for (const place of places) {
         const { overallScore } = scoreLeadFromPresence(place);
         const dataSource = source === "Google Maps API" ? "google_maps" : "ai_estimated";
-        await blink.db.leads.create({ id: crypto.randomUUID(), userId, companyName: place.companyName, website: place.website || "", phone: place.phone || "", contactEmail: "", contactName: "", source, dataSource, niche, location: place.address || location, status: "new", leadScore: overallScore, consentObtained: 0 });
+        await blink.db.leads.create({ id: crypto.randomUUID(), userId, companyName: place.companyName, website: place.website || "", phone: place.phone || "", contactEmail: "", contactName: "", source, dataSource, niche, location: place.address || location, status: "new", leadScore: overallScore, consentObtained: 0, ...placeSignals(place) });
         created++;
       }
       await updateRun("success", 100, `${source}: ${created} new lead(s) added. Query: "${niche}" in "${location}".`);
@@ -58,7 +59,7 @@ export async function runOrchestration(
 
     // ─── Intent Discovery (warm, real purchase-intent leads from public posts) ─
     if (agentName === "Intent Discovery") {
-      const niche = body.niche || "commercial bridge lender";
+      const niche = body.niche || "plumber";
       if (!env.TAVILY_API_KEY && !env.EXA_API_KEY) {
         await updateRun("failed", 0, "add TAVILY_API_KEY to enable Intent Discovery (EXA_API_KEY also accepted as an alternative).");
         return;
@@ -227,7 +228,7 @@ export async function runOrchestration(
 
     // ─── Full Pipeline ────────────────────────────────────────────────────────
     if (agentName === "Full Pipeline" || agentName === "Coordinator") {
-      const niche = body.niche || "commercial bridge lender";
+      const niche = body.niche || "plumber";
       const location = body.location || "Southern California";
       await runFullPipeline(blink, userId, updateRun, env, mapsKey, niche, location, growthPackagePrice, hasEmailProvider);
       return;
@@ -240,6 +241,24 @@ export async function runOrchestration(
   }
 }
 
+/** Maps signals and the matched offer, stored on the lead so scoring/outreach/billing can use them later. */
+function placeSignals(place: { website?: string; rating?: number; reviewCount?: number; open24h?: boolean }) {
+  const offer = matchOffer(place);
+  return {
+    rating: place.rating || null, reviewCount: place.reviewCount ?? null, open24h: !!place.open24h,
+    offerId: offer.id, offerName: offer.name, offerReason: offer.reason, offerSetup: offer.setupPrice, offerMonthly: offer.monthlyPrice,
+  };
+}
+
+/** The outreach line describing what to sell this lead. */
+function offerLine(lead: any): string {
+  const offer = matchOffer(lead);
+  const price = offer.monthlyPrice
+    ? `${offer.setupPrice ? `$${offer.setupPrice} one-time plus ` : ""}$${offer.monthlyPrice}/month`
+    : `$${offer.setupPrice} one-time`;
+  return `What we're offering them: ${offer.pitch} (${price}). Why they need it: ${offer.reason}. Mention that specific reason; don't mention price in the first email.`;
+}
+
 async function invoiceLead(blink: any, userId: string, env: Record<string, string>, stripe: Stripe, lead: any, growthPackagePrice: number, hasEmailProvider: boolean): Promise<{ ok: boolean; message: string }> {
   // Only an open/paid invoice blocks re-invoicing — a voided/uncollectible one should not.
   const existing = await blink.db.invoices.list({ where: { leadId: lead.id, userId }, limit: 5 }) as any[];
@@ -250,32 +269,51 @@ async function invoiceLead(blink: any, userId: string, env: Record<string, strin
     return { ok: false, message: `Blocked: ${lead.companyName} has not been verified yet. Verify the lead on the Leads page first.` };
   }
 
-  const amountCents = Math.round(growthPackagePrice * 100);
   const customer = await findOrCreateCustomer(stripe, lead.contactEmail || "", lead.contactName || lead.companyName);
-  const invoice = await createAndFinalizeInvoice(stripe, {
-    customerId: customer.id,
-    amountCents,
-    description: `Digital Agency Growth Package — ${lead.companyName}`,
-  });
+  const monthly = Number(lead.offerMonthly) || 0;
+  const setup = Number(lead.offerSetup) || 0;
+  let invoice: Stripe.Invoice;
+  let subscriptionId: string | null = null;
+  let firstAmount: number;
+  let productLabel: string;
+  if (lead.offerId && monthly > 0) {
+    // Recurring offer: monthly subscription, setup fee (if any) on the first invoice.
+    const r = await createRetainerSubscription(stripe, {
+      customerId: customer.id, offerId: lead.offerId, offerName: lead.offerName || lead.offerId,
+      monthlyCents: Math.round(monthly * 100), setupCents: Math.round(setup * 100),
+    });
+    invoice = r.invoice;
+    subscriptionId = r.subscription.id;
+    firstAmount = setup + monthly;
+    productLabel = `${lead.offerName} (${setup ? `$${setup.toLocaleString()} setup + ` : ""}$${monthly.toLocaleString()}/mo)`;
+  } else {
+    firstAmount = lead.offerId && setup > 0 ? setup : growthPackagePrice;
+    productLabel = lead.offerId && setup > 0 ? lead.offerName : "Digital Agency Growth Package";
+    invoice = await createAndFinalizeInvoice(stripe, {
+      customerId: customer.id,
+      amountCents: Math.round(firstAmount * 100),
+      description: `${productLabel} — ${lead.companyName}`,
+    });
+  }
 
   const invoiceId = crypto.randomUUID();
-  await blink.db.invoices.create({ id: invoiceId, userId, leadId: lead.id, amount: growthPackagePrice, status: "open", stripeInvoiceId: invoice.id });
+  await blink.db.invoices.create({ id: invoiceId, userId, leadId: lead.id, amount: firstAmount, status: "open", stripeInvoiceId: invoice.id, stripeSubscriptionId: subscriptionId, monthlyAmount: monthly || null });
   await blink.db.invoiceReminders.create({ id: crypto.randomUUID(), userId, invoiceId, reminderType: "initial", status: "pending", escalationLevel: 1 });
   await blink.db.leads.update(lead.id, { status: "proposal" });
 
-  const formattedPrice = growthPackagePrice.toLocaleString();
+  const formattedPrice = firstAmount.toLocaleString();
   let emailSent = false;
   if (lead.contactEmail && hasEmailProvider && invoice.hosted_invoice_url) {
-    emailSent = await sendEmail(env, lead.contactEmail, `Invoice ready — Digital Agency Growth Package ($${formattedPrice})`,
+    emailSent = await sendEmail(env, lead.contactEmail, `Invoice ready — ${productLabel}`,
       `<div style="font-family:Arial,sans-serif;max-width:600px;color:#333;line-height:1.6">
         <p>Hi ${lead.contactName || "there"},</p>
-        <p>Your <strong>Digital Agency Growth Package</strong> invoice for <strong>$${formattedPrice}</strong> is ready.</p>
+        <p>Your <strong>${productLabel}</strong> invoice for <strong>$${formattedPrice}</strong> is ready.</p>
         <p><a href="${invoice.hosted_invoice_url}" style="background:#0D9488;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">View & Pay Invoice</a></p>
         <hr style="border:none;border-top:1px solid #eee;margin:20px 0"/>
         <p style="color:#888;font-size:12px">— AgentOrch<br/><a href="https://agentorch.io" style="color:#0D9488">agentorch.io</a></p>
       </div>`);
   }
-  return { ok: true, message: `Real Stripe invoice ${invoice.id} created for $${formattedPrice} (${lead.companyName}).${emailSent ? " Emailed to customer." : lead.contactEmail ? " (No email provider key — email not sent, use hosted link.)" : " (No contact email on file.)"}` };
+  return { ok: true, message: `Real Stripe ${subscriptionId ? `subscription ${subscriptionId}, first invoice` : "invoice"} ${invoice.id} created for $${formattedPrice} — ${productLabel} (${lead.companyName}).${emailSent ? " Emailed to customer." : lead.contactEmail ? " (No email provider key — email not sent, use hosted link.)" : " (No contact email on file.)"}` };
 }
 
 /** Company names already in this user's pipeline, lowercased, so discovery can skip them up front instead of fetching-then-discarding. */
@@ -298,15 +336,20 @@ async function scoreLead(blink: any, userId: string, lead: any, growthPackagePri
   const isIntentLead = lead.dataSource === "intent" && typeof lead.intentScore === "number";
   const { overallScore, conversionLikelihood, issues } = isIntentLead
     ? { overallScore: lead.intentScore, conversionLikelihood: lead.intentScore, issues: [`Expressed purchase intent: "${lead.intentContext || ""}"`] }
-    : scoreLeadFromPresence({ website: lead.website, phone: lead.phone });
+    : scoreLeadFromPresence({ website: lead.website, phone: lead.phone, rating: lead.rating, reviewCount: lead.reviewCount });
   const issuesJson = JSON.stringify(issues);
+  const offer = isIntentLead ? null : matchOffer(lead);
+  const potentialServicesValue = offer ? firstYearValue(offer) : growthPackagePrice;
   const existing = await blink.db.leadScores.list({ where: { leadId: lead.id, userId }, limit: 1 }) as any[];
   if (existing.length > 0) {
-    await blink.db.leadScores.update(existing[0].id, { overallScore, conversionLikelihood, issuesJson, potentialServicesValue: growthPackagePrice });
+    await blink.db.leadScores.update(existing[0].id, { overallScore, conversionLikelihood, issuesJson, potentialServicesValue });
   } else {
-    await blink.db.leadScores.create({ id: crypto.randomUUID(), userId, leadId: lead.id, overallScore, conversionLikelihood, issuesJson, potentialServicesValue: growthPackagePrice });
+    await blink.db.leadScores.create({ id: crypto.randomUUID(), userId, leadId: lead.id, overallScore, conversionLikelihood, issuesJson, potentialServicesValue });
   }
-  await blink.db.leads.update(lead.id, { status: "scored", leadScore: overallScore });
+  await blink.db.leads.update(lead.id, {
+    status: "scored", leadScore: overallScore,
+    ...(offer ? { offerId: offer.id, offerName: offer.name, offerReason: offer.reason, offerSetup: offer.setupPrice, offerMonthly: offer.monthlyPrice } : {}),
+  });
 }
 
 async function runOutreachForLead(blink: any, userId: string, env: Record<string, string>, lead: any, hasEmailProvider: boolean): Promise<boolean> {
@@ -314,7 +357,7 @@ async function runOutreachForLead(blink: any, userId: string, env: Record<string
   // of a cold "we built you a preview" pitch — that's the whole point of this source.
   const prompt = lead.dataSource === "intent" && lead.intentContext
     ? `Write a 4-sentence warm outreach email for ${lead.companyName} (${lead.contactName || "there"}). They recently posted publicly: "${lead.intentContext}". Open by naturally referencing that you saw their post (don't be creepy/stalker-ish about it — light touch), briefly mention you help ${lead.niche || "businesses like theirs"} with exactly that problem, offer a no-pressure look at what you'd suggest, end with a low-pressure yes/no question. Conversational, not salesy.`
-    : `Write a 4-sentence cold outreach email for ${lead.companyName} (${lead.contactName || "decision maker"}). Mention you built them a preview website, reference SEO gaps, offer no-pressure view, end with yes/no question. Conversational.`;
+    : `Write a 4-sentence cold outreach email for ${lead.companyName} (${lead.contactName || "decision maker"}). ${offerLine(lead)} Mention you put together a free preview/audit for them, offer a no-pressure look, end with a yes/no question. Conversational, not salesy.`;
   const emailBody = await generateAIContent(env, prompt);
   const existingSeq = await blink.db.outreachSequences.list({ where: { leadId: lead.id, userId }, limit: 1 }) as any[];
   let sequenceId: string;
@@ -460,14 +503,14 @@ async function runFullPipeline(blink: any, userId: string, updateRun: Function, 
     const { overallScore } = scoreLeadFromPresence(place);
     const id = crypto.randomUUID();
     const dataSource = source === "Google Maps API" ? "google_maps" : "ai_estimated";
-    await blink.db.leads.create({ id, userId, companyName: place.companyName, website: place.website || "", phone: place.phone || "", contactEmail: "", contactName: "", source, dataSource, niche, location: place.address || location, status: "new", leadScore: overallScore, consentObtained: 0 });
+    await blink.db.leads.create({ id, userId, companyName: place.companyName, website: place.website || "", phone: place.phone || "", contactEmail: "", contactName: "", source, dataSource, niche, location: place.address || location, status: "new", leadScore: overallScore, consentObtained: 0, ...placeSignals(place) });
     newLeads.push({ ...place, id, leadScore: overallScore });
   }
   await updateRun("running", 22, `Discovered ${newLeads.length} new leads. Scoring...`);
   // Stage 2: Scoring
   for (const lead of newLeads) {
     const { overallScore, conversionLikelihood, issues } = scoreLeadFromPresence(lead);
-    await blink.db.leadScores.create({ id: crypto.randomUUID(), userId, leadId: lead.id, overallScore, conversionLikelihood, issuesJson: JSON.stringify(issues), potentialServicesValue: growthPackagePrice });
+    await blink.db.leadScores.create({ id: crypto.randomUUID(), userId, leadId: lead.id, overallScore, conversionLikelihood, issuesJson: JSON.stringify(issues), potentialServicesValue: firstYearValue(matchOffer(lead)) });
     await blink.db.leads.update(lead.id, { status: "scored", leadScore: overallScore });
     lead.overallScore = overallScore;
     lead.realIssues = issues;
@@ -493,7 +536,7 @@ async function runFullPipeline(blink: any, userId: string, updateRun: Function, 
     const freshLead = (await blink.db.leads.list({ where: { id: lead.id, userId }, limit: 1 }) as any[])[0];
     if (!freshLead?.consentObtained) { outreachSkipped++; continue; }
     const seqId = crypto.randomUUID();
-    const emailBody = await generateAIContent(env, `Write a 4-sentence cold outreach email for ${lead.companyName} (${niche} in ${lead.address || location}). Mention you built them a preview website, reference SEO gaps, offer no-pressure view, end with yes/no question. Conversational.`);
+    const emailBody = await generateAIContent(env, `Write a 4-sentence cold outreach email for ${lead.companyName} (${niche} in ${lead.address || location}). ${offerLine(lead)} Mention you put together a free preview/audit for them, offer a no-pressure look, end with a yes/no question. Conversational, not salesy.`);
     await blink.db.outreachSequences.create({ id: seqId, userId, leadId: lead.id, step: 1, status: "sent", emailSentAt: new Date().toISOString(), lastSentAt: new Date().toISOString(), lastEmailBody: emailBody });
     await blink.db.outreachAnalytics.create({ id: crypto.randomUUID(), userId, sequenceId: seqId, leadId: lead.id, step: 1, eventType: "sent", metadata: JSON.stringify({ automated: true }) });
     if (freshLead.contactEmail && hasEmailProvider) {

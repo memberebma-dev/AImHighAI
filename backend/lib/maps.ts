@@ -10,6 +10,7 @@ export interface PlaceResult {
   rating: number;
   reviewCount: number;
   placeId: string;
+  open24h?: boolean;
 }
 
 export interface DiscoveryResult {
@@ -123,6 +124,7 @@ export function placeFromTregRow(row: any, fallbackAddress: string): PlaceResult
     rating: Number(row.rating) || 0,
     reviewCount: Number(row.review_count) || 0,
     placeId: typeof row.place_id === "string" && row.place_id ? row.place_id : `treg_${row.cid ?? crypto.randomUUID()}`,
+    open24h: !!row.hours && typeof row.hours === "object" && Object.values(row.hours).some((h) => h === "Open 24 hours"),
   };
 }
 

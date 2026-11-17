@@ -239,8 +239,8 @@ function SettingsPage() {
           </div>
 
           <p className="text-sm text-slate-400 mb-5">
-            Connect your Stripe account so the engine automatically sends $4,997 Growth Package
-            invoices when bridge lender prospects say "yes" to your outreach.
+            Connect your Stripe account so the engine automatically sends invoices and starts
+            monthly plans when prospects say "yes" to your outreach.
           </p>
 
           {stripeStatus === 'checking' ? (

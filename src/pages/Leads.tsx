@@ -338,6 +338,14 @@ export function LeadsPage() {
                             <AlertTriangle className="w-2.5 h-2.5" /> Unverified — AI-estimated
                           </Badge>
                         )}
+                        {lead.offerName && (
+                          <Badge className="bg-teal-500/10 text-teal-300 border-teal-500/20 text-[10px]" title={lead.offerReason || undefined}>
+                            {lead.offerName}
+                            {' · '}
+                            {lead.offerSetup ? `$${lead.offerSetup}${lead.offerMonthly ? ' + ' : ''}` : ''}
+                            {lead.offerMonthly ? `$${lead.offerMonthly}/mo` : ''}
+                          </Badge>
+                        )}
                         {lead.dataSource === 'intent' && (
                           <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/20 text-[10px] gap-1" title={lead.intentContext}>
                             <Flame className="w-2.5 h-2.5" /> Intent
