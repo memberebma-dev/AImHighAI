@@ -26,14 +26,18 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * of re-finding (and re-deduping-away) the same handful every time.
  */
 export async function discoverLeadsFromMaps(
-  mapsKey: string,
+  env: Record<string, string>,
   niche: string,
   location: string,
   maxResults = 10,
   excludeNames: Set<string> = new Set()
 ): Promise<DiscoveryResult> {
+  // Prefer treg (one token, no Google Cloud billing setup); otherwise the
+  // team's own Google Maps key.
+  if (env.TREG_TOKEN) return discoverLeadsViaTreg(env.TREG_TOKEN, niche, location, maxResults, excludeNames);
+  const mapsKey = env.GOOGLE_MAPS_API_KEY || "";
   if (!mapsKey) {
-    return { places: [], diagnostic: "GOOGLE_MAPS_API_KEY not configured." };
+    return { places: [], diagnostic: "Neither TREG_TOKEN nor GOOGLE_MAPS_API_KEY is configured." };
   }
   const collected: PlaceResult[] = [];
   let pageToken: string | undefined;
@@ -103,6 +107,67 @@ export async function discoverLeadsFromMaps(
     }
   }
   return { places: collected, diagnostic };
+}
+
+const TREG_MAPS_URL = "https://treg.to/call/crawl4ai.google.serp.maps";
+
+/** Map one treg Google Maps row to a PlaceResult; null if it has no name. */
+export function placeFromTregRow(row: any, fallbackAddress: string): PlaceResult | null {
+  const name = typeof row?.name === "string" ? row.name.trim() : "";
+  if (!name) return null;
+  return {
+    companyName: name,
+    website: typeof row.website === "string" ? row.website : "",
+    phone: typeof row.phone === "string" ? row.phone : "",
+    address: typeof row.address === "string" && row.address ? row.address : fallbackAddress,
+    rating: Number(row.rating) || 0,
+    reviewCount: Number(row.review_count) || 0,
+    placeId: typeof row.place_id === "string" && row.place_id ? row.place_id : `treg_${row.cid ?? crypto.randomUUID()}`,
+  };
+}
+
+/** Google Maps business search through treg (credential held by treg, billed per call). */
+export async function discoverLeadsViaTreg(
+  token: string,
+  niche: string,
+  location: string,
+  maxResults: number,
+  excludeNames: Set<string>,
+): Promise<DiscoveryResult> {
+  try {
+    const res = await fetch(TREG_MAPS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Treg-Token": token },
+      // Ask for extra rows so already-known businesses don't leave us short.
+      body: JSON.stringify({ query: niche, location, limit: Math.min(100, maxResults + excludeNames.size + 10) }),
+      signal: AbortSignal.timeout(45_000),
+    });
+    if (!res.ok) {
+      const text = (await res.text()).slice(0, 300);
+      return { places: [], diagnostic: `treg Maps search failed (HTTP ${res.status}): ${text}` };
+    }
+    const data = (await res.json()) as any;
+    const rows: any[] = Array.isArray(data?.rows) ? data.rows : [];
+    const places: PlaceResult[] = [];
+    for (const row of rows) {
+      const p = placeFromTregRow(row, location);
+      if (!p) continue;
+      const key = p.companyName.toLowerCase();
+      if (excludeNames.has(key)) continue;
+      excludeNames.add(key);
+      places.push(p);
+      if (places.length >= maxResults) break;
+    }
+    let diagnostic = "";
+    if (places.length === 0) {
+      diagnostic = rows.length
+        ? `Google Maps found businesses for "${niche}" in "${location}" but all of them are already in your pipeline. Try a different niche or location.`
+        : `Google Maps found zero businesses for "${niche}" in "${location}". Try a broader niche or a more specific location.`;
+    }
+    return { places, diagnostic };
+  } catch (e: any) {
+    return { places: [], diagnostic: `treg Maps search error: ${e.message}` };
+  }
 }
 
 /** Discover leads via the AI provider fallback chain when Google Maps fails (billing not enabled, etc.) */

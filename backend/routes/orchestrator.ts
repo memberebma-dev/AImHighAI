@@ -34,7 +34,7 @@ export async function runOrchestration(
       const location = body.location || "Southern California";
       await updateRun("running", 10, `Searching for "${niche}" in "${location}"...`);
       const excludeNames = await fetchExistingCompanyNames(blink, userId);
-      let { places, diagnostic } = await discoverLeadsFromMaps(mapsKey, niche, location, 10, excludeNames);
+      let { places, diagnostic } = await discoverLeadsFromMaps(env, niche, location, 10, excludeNames);
       let source = "Google Maps API";
       if (places.length === 0) {
         await updateRun("running", 20, `${diagnostic} Falling back to AI discovery for "${niche}" in "${location}"...`);
@@ -445,7 +445,7 @@ async function runFullPipeline(blink: any, userId: string, updateRun: Function, 
   // Stage 1: Discovery (Maps → AI fallback)
   await updateRun("running", 8, `Stage 1: Searching "${niche}" in "${location}"...`);
   const excludeNames = await fetchExistingCompanyNames(blink, userId);
-  let { places, diagnostic } = await discoverLeadsFromMaps(mapsKey, niche, location, 5, excludeNames);
+  let { places, diagnostic } = await discoverLeadsFromMaps(env, niche, location, 5, excludeNames);
   let source = "Google Maps API";
   if (places.length === 0) {
     await updateRun("running", 12, `${diagnostic} Using AI discovery for "${niche}" in "${location}"...`);
