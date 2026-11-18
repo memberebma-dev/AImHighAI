@@ -32,7 +32,7 @@ User-agent: *
 Disallow: /api/
 Disallow: /stripe/
 
-Sitemap: https://agentorch-pipeline-engine-dimg0s7y.blinkpowered.com/sitemap.xml
+Sitemap: https://aimhighai.vercel.app/sitemap.xml
 
 # AI discoverability
-# llms.txt: https://agentorch-pipeline-engine-dimg0s7y.blinkpowered.com/llms.txt
+# llms.txt: https://aimhighai.vercel.app/llms.txt

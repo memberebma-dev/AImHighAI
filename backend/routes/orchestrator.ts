@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { serverDb } from "../lib/db.js";
 import { generateAIContent, generateStructuredContent } from "../lib/ai.js";
-import { sendEmail, buildOutreachEmail } from "../lib/email.js";
+import { SITE_URL, sendEmail, buildOutreachEmail } from "../lib/email.js";
 import { discoverLeadsFromMaps, discoverLeadsViaAI, scoreLeadFromPresence } from "../lib/maps.js";
 import { matchOffer, firstYearValue } from "../lib/offers.js";
 import { discoverIntentLeads } from "../lib/intentDiscovery.js";
@@ -310,7 +310,7 @@ async function invoiceLead(blink: any, userId: string, env: Record<string, strin
         <p>Your <strong>${productLabel}</strong> invoice for <strong>$${formattedPrice}</strong> is ready.</p>
         <p><a href="${invoice.hosted_invoice_url}" style="background:#0D9488;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">View & Pay Invoice</a></p>
         <hr style="border:none;border-top:1px solid #eee;margin:20px 0"/>
-        <p style="color:#888;font-size:12px">— AgentOrch<br/><a href="https://agentorch.io" style="color:#0D9488">agentorch.io</a></p>
+        <p style="color:#888;font-size:12px">— AImHighAI<br/><a href="${SITE_URL}" style="color:#0D9488">${SITE_URL.replace(/^https?:\/\//, "")}</a></p>
       </div>`);
   }
   return { ok: true, message: `Real Stripe ${subscriptionId ? `subscription ${subscriptionId}, first invoice` : "invoice"} ${invoice.id} created for $${formattedPrice} — ${productLabel} (${lead.companyName}).${emailSent ? " Emailed to customer." : lead.contactEmail ? " (No email provider key — email not sent, use hosted link.)" : " (No contact email on file.)"}` };

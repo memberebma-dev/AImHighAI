@@ -19,9 +19,9 @@ function fakeStripe(existingLookupKeys: string[] = [], invoiceStatus = "draft") 
 }
 
 test("ensurePrice reuses an existing price for the same offer and amount", async () => {
-  const { stripe, calls } = fakeStripe(["agentorch_local_seo_monthly_49700"]);
+  const { stripe, calls } = fakeStripe(["aimhighai_local_seo_monthly_49700"]);
   const p = await ensurePrice(stripe, { offerId: "local_seo", name: "SEO", amountCents: 49700, monthly: true });
-  assert.equal(p.id, "existing_agentorch_local_seo_monthly_49700");
+  assert.equal(p.id, "existing_aimhighai_local_seo_monthly_49700");
   assert.equal(calls.pricesCreate.length, 0);
 });
 
@@ -31,8 +31,8 @@ test("site build: $49/mo subscription with $497 setup on the first invoice, fina
   assert.deepEqual(calls.pricesCreate.map((p: any) => [p.unit_amount, !!p.recurring]), [[4900, true], [49700, false]]);
   const sub = calls.subsCreate[0];
   assert.equal(sub.collection_method, "send_invoice");
-  assert.deepEqual(sub.items, [{ price: "price_agentorch_site_build_monthly_4900" }]);
-  assert.deepEqual(sub.add_invoice_items, [{ price: "price_agentorch_site_build_setup_49700" }]);
+  assert.deepEqual(sub.items, [{ price: "price_aimhighai_site_build_monthly_4900" }]);
+  assert.deepEqual(sub.add_invoice_items, [{ price: "price_aimhighai_site_build_setup_49700" }]);
   assert.deepEqual(calls.finalized, ["in_1"]);
   assert.equal(r.invoice.hosted_invoice_url, "https://pay");
 });

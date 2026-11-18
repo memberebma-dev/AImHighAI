@@ -275,7 +275,7 @@ export function useOutreachAnalytics() {
   })
 }
 
-// Affiliates and Subscribers represent AgentOrch's OWN paying customers/referral
+// Affiliates and Subscribers represent AImHighAI's OWN paying customers/referral
 // partners (the platform's business, not any one tenant's pipeline) — they are
 // intentionally NOT scoped by userId the way pipeline data is. Until real
 // admin roles exist, visibility is restricted at the page level (see

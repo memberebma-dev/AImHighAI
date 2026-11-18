@@ -1,5 +1,12 @@
 // Email utilities — SendGrid primary, Resend fallback
 
+/** Public site link used in email footers. */
+export const SITE_URL = (process.env.PUBLIC_APP_URL || "https://aimhighai.vercel.app").replace(/\/$/, "");
+
+/** Sender address. The domain must be verified in SendGrid/Resend; set EMAIL_FROM_ADDRESS to override. */
+const FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || "pipeline@aimhighai.net";
+const FROM_NAME = "AImHighAI";
+
 export async function sendEmail(
   env: Record<string, string>,
   to: string,
@@ -17,7 +24,7 @@ export async function sendEmail(
         headers: { Authorization: `Bearer ${sgKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           personalizations: [{ to: [{ email: to }] }],
-          from: { email: "pipeline@agentorch.io", name: "AgentOrch" },
+          from: { email: FROM_ADDRESS, name: FROM_NAME },
           subject,
           content: [{ type: "text/html", value: html }],
         }),
@@ -34,7 +41,7 @@ export async function sendEmail(
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from: "AgentOrch <pipeline@agentorch.io>", to: [to], subject, html }),
+        body: JSON.stringify({ from: `${FROM_NAME} <${FROM_ADDRESS}>`, to: [to], subject, html }),
       });
       if (res.ok) return true;
       console.error("Resend failed:", res.status, await res.text().catch(() => ""));
@@ -55,7 +62,7 @@ export function buildOutreachEmail(
   <p>Hi ${contactName || "there"},</p>
   ${emailBody.split("\n").filter(l => l.trim()).map(p => `<p>${p}</p>`).join("")}
   <hr style="border:none;border-top:1px solid #eee;margin:20px 0"/>
-  <p style="color:#888;font-size:12px">— AgentOrch Acquisition Engine<br/><a href="https://agentorch.io" style="color:#0D9488">agentorch.io</a></p>
+  <p style="color:#888;font-size:12px">— AImHighAI Acquisition Engine<br/><a href="${SITE_URL}" style="color:#0D9488">${SITE_URL.replace(/^https?:\/\//, "")}</a></p>
 </div>`;
 }
 
@@ -74,6 +81,6 @@ export function buildReminderHtml(
   <p>${intros[level] || intros[1]}</p>
   <p>Questions? Reply to this email — we're here to help.</p>
   <hr style="border:none;border-top:1px solid #eee;margin:20px 0"/>
-  <p style="color:#888;font-size:12px">— AgentOrch<br/><a href="https://agentorch.io" style="color:#0D9488">agentorch.io</a></p>
+  <p style="color:#888;font-size:12px">— AImHighAI<br/><a href="${SITE_URL}" style="color:#0D9488">${SITE_URL.replace(/^https?:\/\//, "")}</a></p>
 </div>`;
 }

@@ -1,4 +1,4 @@
-const PIPELINE_CONFIG_KEY = 'agentorch_pipeline_config'
+const PIPELINE_CONFIG_KEY = 'aimhighai_pipeline_config'
 
 export interface PipelineConfig {
   leadScoreThreshold: number
@@ -25,6 +25,7 @@ export const SUGGESTED_NICHES = [
   'Roofing Contractors',
   'HVAC Companies',
   'Emergency Plumbers',
+  'Commercial Bridge Lenders',
   'Medical Spas & Cosmetic Dermatology',
   'Cosmetic & Implant Dentistry',
   'Drug & Alcohol Rehab Centers',

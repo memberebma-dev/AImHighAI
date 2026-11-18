@@ -18,7 +18,7 @@ export async function requireUserId(env: Record<string, string>, authHeader: str
   return (await verify(env, authHeader)).id;
 }
 
-// Affiliates/subscribers are AgentOrch's OWN business data. Placeholder owner
+// Affiliates/subscribers are AImHighAI's OWN business data. Placeholder owner
 // gate until a real role system exists. Keep in sync with src/lib/auth.ts.
 const OWNER_EMAIL = "memberebma@gmail.com";
 

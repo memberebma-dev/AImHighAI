@@ -115,7 +115,7 @@ export async function trackAffiliateConversion(
 }
 
 // Intentionally public/unauthenticated — fired by anonymous visitors landing via an
-// affiliate referral link, not by a logged-in AgentOrch user.
+// affiliate referral link, not by a logged-in AImHighAI user.
 affiliatesApp.post("/track", async (c) => {
   const env = c.env as Record<string, string>;
   const blink = serverDb(env);

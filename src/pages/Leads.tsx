@@ -152,7 +152,7 @@ export function LeadsPage() {
     const link = document.createElement("a")
     const url = URL.createObjectURL(blob)
     link.setAttribute("href", url)
-    link.setAttribute("download", "agentorch_leads.csv")
+    link.setAttribute("download", "aimhighai_leads.csv")
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()

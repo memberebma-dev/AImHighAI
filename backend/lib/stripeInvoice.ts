@@ -41,7 +41,7 @@ export async function ensurePrice(
   stripe: Stripe,
   params: { offerId: string; name: string; amountCents: number; monthly: boolean }
 ): Promise<Stripe.Price> {
-  const lookupKey = `agentorch_${params.offerId}_${params.monthly ? "monthly" : "setup"}_${params.amountCents}`;
+  const lookupKey = `aimhighai_${params.offerId}_${params.monthly ? "monthly" : "setup"}_${params.amountCents}`;
   const found = await stripe.prices.list({ lookup_keys: [lookupKey], active: true, limit: 1 });
   if (found.data.length > 0) return found.data[0];
   return stripe.prices.create({
@@ -72,7 +72,7 @@ export async function createRetainerSubscription(
     days_until_due: params.daysUntilDue ?? 7,
     items: [{ price: monthly.id }],
     ...(setup ? { add_invoice_items: [{ price: setup.id }] } : {}),
-    metadata: { agentorch_offer: params.offerId },
+    metadata: { aimhighai_offer: params.offerId },
   });
   const invoiceId = typeof subscription.latest_invoice === "string" ? subscription.latest_invoice : subscription.latest_invoice?.id;
   if (!invoiceId) throw new Error(`Stripe subscription ${subscription.id} has no first invoice`);

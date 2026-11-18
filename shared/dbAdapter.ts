@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Drop-in replacement for Blink's `blink.db.<table>` API, backed by Supabase.
- * Supports exactly what AgentOrch uses: equality `where`, single-field
+ * Supports exactly what AImHighAI uses: equality `where`, single-field
  * `orderBy`, `limit`, plus create / update / delete / count.
  * Every Supabase error is thrown — never swallowed.
  */

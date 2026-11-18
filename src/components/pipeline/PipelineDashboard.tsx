@@ -1,5 +1,5 @@
 /**
- * PipelineDashboard - Main dashboard for AgentOrch Pipeline Engine
+ * PipelineDashboard - Main dashboard for AImHighAI Pipeline Engine
  * Provides high-level overview of the acquisition pipeline
  */
 
@@ -115,7 +115,7 @@ export function PipelineDashboard({ onNavigate }: { onNavigate: (view: string) =
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight italic">AgentOrch Pipeline</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight italic">AImHighAI Pipeline</h1>
           <p className="text-sm text-slate-400 mt-1">Autonomous Acquisition & Passive Revenue Engine for Digital Services</p>
         </div>
         <div className="flex items-center gap-2">

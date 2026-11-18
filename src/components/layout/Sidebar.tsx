@@ -67,7 +67,7 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-semibold text-white tracking-tight">AgentOrch</span>
+            <span className="font-semibold text-white tracking-tight">AImHighAI</span>
           </div>
         )}
         <button
