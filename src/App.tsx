@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { PipelineDashboard } from '@/components/pipeline/PipelineDashboard'
 import { LeadsPage } from '@/pages/Leads'
@@ -152,6 +153,7 @@ function App() {
           {renderView()}
         </div>
       </main>
+      <Analytics />
     </div>
   )
 }
