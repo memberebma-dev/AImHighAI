@@ -4,8 +4,8 @@
 // (struggling with leads, website, SEO, marketing), instead of cold-discovering
 // businesses that may not be looking for help at all.
 
-import { generateStructuredContent } from "./ai";
-import { searchPublicIntentContent } from "./webSearch";
+import { generateStructuredContent } from "./ai.js";
+import { searchPublicIntentContent } from "./webSearch.js";
 
 interface IntentPhrasesResponse {
   phrases: string[];

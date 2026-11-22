@@ -1,15 +1,15 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { createClient } from "@blinkdotnew/sdk";
-import { runOrchestration } from "./routes/orchestrator";
-import { generateAIContent } from "./lib/ai";
-import { sendEmail, buildOutreachEmail } from "./lib/email";
-import { requireUserId } from "./lib/auth";
-import analyticsApp from "./routes/analytics";
-import affiliatesApp from "./routes/affiliates";
-import remindersApp from "./routes/reminders";
-import emailWebhookApp from "./routes/emailWebhook";
-import previewApp from "./routes/preview";
+import { serverDb } from "./lib/db.js";
+import { runOrchestration } from "./routes/orchestrator.js";
+import { generateAIContent } from "./lib/ai.js";
+import { sendEmail, buildOutreachEmail } from "./lib/email.js";
+import { requireUserId } from "./lib/auth.js";
+import analyticsApp from "./routes/analytics.js";
+import affiliatesApp from "./routes/affiliates.js";
+import remindersApp from "./routes/reminders.js";
+import emailWebhookApp from "./routes/emailWebhook.js";
+import previewApp from "./routes/preview.js";
 
 const app = new Hono<{ Bindings: Record<string, string> }>();
 app.use("*", cors());
@@ -52,7 +52,7 @@ app.post("/smart-followup", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 401);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
   const body = await c.req.json().catch(() => ({} as any));
   const windowHours = Number(body?.windowHours) > 0 ? Number(body.windowHours) : 24;
   const threshold = Number.isFinite(body?.threshold) ? Number(body.threshold) : 60;
@@ -107,7 +107,11 @@ app.route("/reminders", remindersApp);
 app.route("/webhooks/email", emailWebhookApp);
 app.route("/preview", previewApp);
 
-import stripeApp from "./stripe";
+import stripeApp from "./stripe.js";
+import healthApp from "./routes/health.js";
+import { optinApp } from "./routes/optin.js";
 app.route("/stripe", stripeApp);
+app.route("/health", healthApp);
+app.route("/optin", optinApp);
 
 export default app;

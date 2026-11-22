@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { createClient } from "@blinkdotnew/sdk";
-import { requireUserId } from "../lib/auth";
+import { serverDb } from "../lib/db.js";
+import { requireUserId } from "../lib/auth.js";
 
 const analyticsApp = new Hono<{ Bindings: Record<string, string> }>();
 
@@ -12,7 +12,7 @@ analyticsApp.get("/", async (c) => {
   } catch (e: any) {
     return c.json({ error: e.message }, 401);
   }
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+  const blink = serverDb(env);
 
   try {
     const [totalLeads, totalOutreach, totalClients, paidInvoices, openInvoices, analyticsEvents, agentRuns] =

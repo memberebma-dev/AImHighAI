@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { CheckIcon, Loader2, DollarSign, Users, Receipt } from "lucide-react";
 import { toast } from 'sonner';
-import { useBlinkAuth } from '@blinkdotnew/react';
+import { useBlinkAuth } from '@/lib/auth-context';
 import { BACKEND_URL, authedFetch } from '@/lib/api';
 import { useSubscribers, usePipelineStats, useInvoices } from '@/store/pipeline-store';
 
@@ -279,7 +279,7 @@ const BillingPage: React.FC = () => {
                   </div>
                 ))}
                 <ul className="mt-8 space-y-3 text-gray-300 text-left w-full">
-                  <li className="flex items-center"><CheckIcon className="text-green-500 mr-3 flex-shrink-0" size={20} /> Full access to the AgentOrch pipeline (Lead Discovery, Scoring, Asset Generation, Outreach, Invoicing)</li>
+                  <li className="flex items-center"><CheckIcon className="text-green-500 mr-3 flex-shrink-0" size={20} /> Full access to the AImHighAI pipeline (Lead Discovery, Scoring, Asset Generation, Outreach, Invoicing)</li>
                   <li className="flex items-center"><CheckIcon className="text-green-500 mr-3 flex-shrink-0" size={20} /> Real-time Analytics dashboard</li>
                 </ul>
                 {product.description && (

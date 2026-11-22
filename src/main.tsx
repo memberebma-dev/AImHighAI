@@ -2,33 +2,19 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
-import { BlinkProvider, BlinkAuthProvider } from '@blinkdotnew/react'
+import { AuthProvider } from '@/lib/auth-context'
 import App from './App'
 import './index.css'
 
 const queryClient = new QueryClient()
 
-function getProjectId(): string {
-  const envId = import.meta.env.VITE_BLINK_PROJECT_ID
-  if (envId) return envId
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
-  const match = hostname.match(/^([^.]+)\.sites\.blink\.new$/)
-  if (match) return match[1]
-  return 'agentorch-pipeline-engine-dimg0s7y'
-}
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BlinkProvider
-      projectId={getProjectId()}
-      publishableKey={import.meta.env.VITE_BLINK_PUBLISHABLE_KEY || 'blnk_pk_is3Sy1vW0h-YmPhDwbG0N3x3LvqKdeVc'}
-    >
-      <BlinkAuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <Toaster position="top-right" theme="dark" />
-          <App />
-        </QueryClientProvider>
-      </BlinkAuthProvider>
-    </BlinkProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <Toaster position="top-right" theme="dark" />
+        <App />
+      </QueryClientProvider>
+    </AuthProvider>
   </React.StrictMode>,
 )

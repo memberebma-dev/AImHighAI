@@ -43,7 +43,7 @@ import { toast } from 'sonner'
 import { LeadStatus } from '@/types/pipeline'
 import { blink } from '@/lib/blink'
 import { useQueryClient } from '@tanstack/react-query'
-import { useBlinkAuth } from '@blinkdotnew/react'
+import { useBlinkAuth } from '@/lib/auth-context'
 
 export function LeadsPage() {
   const { data: leads, isLoading } = useLeads()
@@ -152,7 +152,7 @@ export function LeadsPage() {
     const link = document.createElement("a")
     const url = URL.createObjectURL(blob)
     link.setAttribute("href", url)
-    link.setAttribute("download", "agentorch_leads.csv")
+    link.setAttribute("download", "aimhighai_leads.csv")
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -336,6 +336,14 @@ export function LeadsPage() {
                         {lead.dataSource === 'ai_estimated' && (
                           <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px] gap-1">
                             <AlertTriangle className="w-2.5 h-2.5" /> Unverified — AI-estimated
+                          </Badge>
+                        )}
+                        {lead.offerName && (
+                          <Badge className="bg-teal-500/10 text-teal-300 border-teal-500/20 text-[10px]" title={lead.offerReason || undefined}>
+                            {lead.offerName}
+                            {' · '}
+                            {lead.offerSetup ? `$${lead.offerSetup}${lead.offerMonthly ? ' + ' : ''}` : ''}
+                            {lead.offerMonthly ? `$${lead.offerMonthly}/mo` : ''}
                           </Badge>
                         )}
                         {lead.dataSource === 'intent' && (

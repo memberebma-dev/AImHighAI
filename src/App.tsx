@@ -13,7 +13,7 @@ import { PrivacyPolicy, TermsConditions } from '@/pages/Legal'
 import { AnalyticsPage } from '@/pages/Analytics'
 import { AffiliatesPage } from '@/pages/Affiliates'
 import { InvoiceRemindersPage } from '@/pages/InvoiceReminders'
-import { useBlinkAuth } from '@blinkdotnew/react'
+import { useBlinkAuth } from '@/lib/auth-context'
 import { blink } from '@/lib/blink'
 import { Button } from '@/components/ui/button'
 import { Loader2, LogOut, Zap, CheckCircle2, ExternalLink, ShieldAlert } from 'lucide-react'
@@ -48,11 +48,52 @@ function OwnerOnlyGate({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-600 mb-4" />
         <h2 className="text-lg font-semibold text-white">Restricted</h2>
-        <p className="text-sm text-slate-500 mt-1 max-w-sm">This page shows AgentOrch's own business data, not your pipeline — it isn't available on your account.</p>
+        <p className="text-sm text-slate-500 mt-1 max-w-sm">This page shows AImHighAI's own business data, not your pipeline — it isn't available on your account.</p>
       </div>
     )
   }
   return <>{children}</>
+}
+
+function LoginForm() {
+  const [email, setEmail] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  if (sent) {
+    return <p className="text-teal-400 text-sm">Check {email} for your sign-in link.</p>
+  }
+  return (
+    <form
+      className="space-y-3"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        setSending(true)
+        try {
+          await blink.auth.login(email.trim())
+          setSent(true)
+        } catch (err: any) {
+          toast.error(err.message || 'Could not send sign-in link')
+        } finally {
+          setSending(false)
+        }
+      }}
+    >
+      <input
+        type="email"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@email.com"
+        className="w-full h-12 rounded-md bg-slate-900 border border-slate-700 px-4 text-white"
+      />
+      <Button type="submit" disabled={sending} className="w-full h-12 bg-teal-600 hover:bg-teal-500 text-lg font-semibold">
+        {sending ? 'Sending…' : 'Email me a sign-in link'}
+      </Button>
+      <p className="text-xs text-slate-500 text-center pt-2">
+        <a href="/free-audit" className="text-teal-400">Free Lead Leak Audit</a> · <a href="/missed-call-calculator" className="hover:text-slate-300">Calculator</a> · <a href="/privacy" className="hover:text-slate-300">Privacy</a> · <a href="/terms" className="hover:text-slate-300">Terms</a>
+      </p>
+    </form>
+  )
 }
 
 function App() {
@@ -92,18 +133,13 @@ function App() {
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight italic">AgentOrch</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight italic">AImHighAI</h1>
             <p className="text-slate-400 mt-2 text-sm">
               Autonomous Acquisition & Passive Revenue Engine for Digital Services Agencies
             </p>
           </div>
           <div className="space-y-4">
-            <Button
-              className="w-full h-12 bg-teal-600 hover:bg-teal-500 text-lg font-semibold"
-              onClick={() => blink.auth.login(window.location.href)}
-            >
-              Access Engine
-            </Button>
+            <LoginForm />
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-left">
                 <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Offerings</p>
@@ -206,8 +242,8 @@ function SettingsPage() {
           </div>
 
           <p className="text-sm text-slate-400 mb-5">
-            Connect your Stripe account so the engine automatically sends $4,997 Growth Package
-            invoices when bridge lender prospects say "yes" to your outreach.
+            Connect your Stripe account so the engine automatically sends invoices and starts
+            monthly plans when prospects say "yes" to your outreach.
           </p>
 
           {stripeStatus === 'checking' ? (
@@ -280,7 +316,7 @@ function SettingsPage() {
               variant="outline"
               size="sm"
               className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10"
-              onClick={() => blink.auth.logout()}
+              onClick={() => blink.auth.logout().catch((e: Error) => toast.error(e.message))}
             >
               <LogOut className="w-4 h-4" />
               Sign Out

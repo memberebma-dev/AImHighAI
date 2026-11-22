@@ -82,7 +82,7 @@ export function AffiliatesPage() {
   }
 
   const copyCode = (code: string) => {
-    navigator.clipboard.writeText(`https://agentorch.io?ref=${code}`)
+    navigator.clipboard.writeText(`${window.location.origin}?ref=${code}`)
     toast.success('Referral link copied!')
   }
 

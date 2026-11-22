@@ -1,4 +1,4 @@
-const PIPELINE_CONFIG_KEY = 'agentorch_pipeline_config'
+const PIPELINE_CONFIG_KEY = 'aimhighai_pipeline_config'
 
 export interface PipelineConfig {
   leadScoreThreshold: number
@@ -11,8 +11,8 @@ export interface PipelineConfig {
 export const DEFAULT_PIPELINE_CONFIG: PipelineConfig = {
   leadScoreThreshold: 60,
   growthPackagePrice: 4997,
-  regionFocus: 'Southern California',
-  niche: 'Commercial Bridge Lenders',
+  regionFocus: 'Hattiesburg, MS',
+  niche: 'Plumbers',
   outreachResponseWindowHours: 48,
 }
 
@@ -20,11 +20,12 @@ export const DEFAULT_PIPELINE_CONFIG: PipelineConfig = {
 // spend (most already pay for leads/ads, so they're pre-qualified to pay for
 // more) — i.e. short time-to-next-dollar for a lead-gen/SEO offer.
 export const SUGGESTED_NICHES = [
-  'Commercial Bridge Lenders',
+  'Plumbers',
   'Personal Injury Lawyers',
   'Roofing Contractors',
   'HVAC Companies',
   'Emergency Plumbers',
+  'Commercial Bridge Lenders',
   'Medical Spas & Cosmetic Dermatology',
   'Cosmetic & Implant Dentistry',
   'Drug & Alcohol Rehab Centers',

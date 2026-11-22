@@ -1,36 +1,31 @@
-import { createClient } from "@blinkdotnew/sdk";
+import { serverDb } from "./db.js";
 
 /**
- * Verifies the caller's Blink access token server-side and returns their real
- * userId — never trust a client-supplied userId field in a request body, since
- * any client could edit it to claim someone else's account. This is the only
- * thing standing between "each user sees only their own data" and the
- * cross-account leak this was built to fix, so every route that touches
- * tenant data must call this before doing anything else.
+ * Verifies the caller's Supabase access token server-side and returns their
+ * real userId — never trust a client-supplied userId in a request body. Every
+ * route that touches tenant data must call this first.
  */
-export async function requireUserId(env: Record<string, string>, authHeader: string | null): Promise<string> {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
-  const result = await blink.auth.verifyToken(authHeader);
-  if (!result.valid || !result.userId) {
-    throw new Error(result.error || "Unauthorized: invalid or missing session token");
-  }
-  return result.userId;
+async function verify(env: Record<string, string>, authHeader: string | null) {
+  const token = (authHeader || "").replace(/^Bearer\s+/i, "").trim();
+  if (!token) throw new Error("Unauthorized: missing session token");
+  const { sb } = serverDb(env);
+  const { data, error } = await sb.auth.getUser(token);
+  if (error || !data.user) throw new Error(`Unauthorized: ${error?.message || "invalid session token"}`);
+  return data.user;
 }
 
-// Affiliates/subscribers represent AgentOrch's OWN business (who refers/pays for the
-// platform itself), not any tenant's pipeline data — there's no real admin-role system
-// yet, so this is a placeholder gate until one exists. Keep in sync with
-// isPlatformOwner in src/lib/auth.ts on the frontend.
+export async function requireUserId(env: Record<string, string>, authHeader: string | null): Promise<string> {
+  return (await verify(env, authHeader)).id;
+}
+
+// Affiliates/subscribers are AImHighAI's OWN business data. Placeholder owner
+// gate until a real role system exists. Keep in sync with src/lib/auth.ts.
 const OWNER_EMAIL = "memberebma@gmail.com";
 
 export async function requireOwner(env: Record<string, string>, authHeader: string | null): Promise<string> {
-  const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
-  const result = await blink.auth.verifyToken(authHeader);
-  if (!result.valid || !result.userId) {
-    throw new Error(result.error || "Unauthorized: invalid or missing session token");
-  }
-  if ((result.email || "").toLowerCase() !== OWNER_EMAIL) {
+  const user = await verify(env, authHeader);
+  if ((user.email || "").toLowerCase() !== OWNER_EMAIL) {
     throw new Error("Forbidden: this data belongs to the platform owner, not your account");
   }
-  return result.userId;
+  return user.id;
 }

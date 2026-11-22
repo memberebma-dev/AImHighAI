@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Missed Call Cost Calculator for Plumbers & Home Services | AImHighAI</title><meta name="description" content="Free calculator: see how much money unanswered calls cost your plumbing or home-service business each month and year, using your own numbers."><link rel="canonical" href="https://aimhighai.vercel.app/missed-call-calculator">
+<meta property="og:type" content="article"><meta property="og:site_name" content="AImHighAI"><meta property="og:title" content="Missed Call Cost Calculator for Plumbers & Home Services | AImHighAI"><meta property="og:description" content="Free calculator: see how much money unanswered calls cost your plumbing or home-service business each month and year, using your own numbers."><meta property="og:url" content="https://aimhighai.vercel.app/missed-call-calculator"><meta property="og:image" content="https://aimhighai.vercel.app/og-cover.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/assets/site.css"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Missed Call Cost Calculator", "applicationCategory": "BusinessApplication", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}</script></head><body>
+<header class="top"><a class="brand" href="/">AImHighAI</a><nav><a href="/free-audit">Free Audit</a><a href="/missed-call-calculator">Calculator</a><a href="/guides/plumbers-missed-calls">Guide</a></nav></header>
+<main class="wrap"><span class="value">Free tool</span><h1>What do missed calls cost you?</h1>
+<p class="lead">Use your own numbers. Nothing is sent anywhere until you ask for the report.</p>
+<div class="card"><div class="grid">
+<div><label>Calls you miss per week<input id="missed" name="missedCallsPerWeek" data-detail type="number" min="0" value="10"></label></div>
+<div><label>Average job value ($)<input id="job" name="avgJob" data-detail type="number" min="0" value="350"></label></div>
+<div><label>% of answered calls that book<input id="close" name="closeRate" data-detail type="number" min="0" max="100" value="40"></label></div>
+</div>
+<div class="grid" style="margin-top:18px"><div><div class="mute">Per month</div><div class="big" id="mo">$0</div></div><div><div class="mute">Per year</div><div class="big" id="yr">$0</div></div></div>
+<p><small class="src">Math: missed calls per week × 4.33 weeks × booking rate × average job. It assumes every missed caller would have booked at your normal rate, which is the upper end. Some callers call back, so treat this as the ceiling, not a promise.</small></p></div>
+<div class="card"><h2 style="margin-top:0">Want the fix plan with this number?</h2>
+<form data-magnet="missed-call-calculator" data-success="Sent! Your plan is on its way.">
+<label>Business name<input name="business"></label><label>Email<input name="email" type="email" required></label>
+<input type="hidden" name="missedCallsPerWeek" data-detail><input type="hidden" name="avgJob" data-detail><input type="hidden" name="closeRate" data-detail>
+<div class="hp" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+<label class="check"><input type="checkbox" name="consent" required> I agree AImHighAI may email me about this request and related offers. I can unsubscribe any time. See the <a href="/privacy">Privacy Policy</a>.</label><button class="btn" type="submit">Email me the plan →</button><p class="msg" role="status"></p></form></div>
+<script>document.querySelector('form[data-magnet]').addEventListener('submit',function(){['missedCallsPerWeek','avgJob','closeRate'].forEach(function(n){this.querySelector('input[type=hidden][name='+n+']').value=document.querySelector('.card input[name='+n+']').value},this)},true)</script>
+<script>
+function fmt(n){return n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0})}
+function calc(){var m=+document.getElementById('missed').value||0,j=+document.getElementById('job').value||0,c=(+document.getElementById('close').value||0)/100;
+var mo=m*4.33*c*j;document.getElementById('mo').textContent=fmt(mo);document.getElementById('yr').textContent=fmt(mo*12);}
+document.addEventListener('input',calc);document.addEventListener('DOMContentLoaded',calc);</script></main>
+<footer class="foot">© 2026 AImHighAI · <a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/disclaimer">Disclaimers</a><a href="/security">Security</a><a href="/privacy#opt-out">Opt out</a></footer>
+<script src="/assets/optin.js" defer></script></body></html>

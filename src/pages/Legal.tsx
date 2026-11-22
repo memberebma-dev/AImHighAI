@@ -11,7 +11,7 @@ export function PrivacyPolicy() {
       <div className="space-y-6">
         <section>
           <h2 className="text-xl font-semibold text-white mb-3">1. Data Collection</h2>
-          <p>AgentOrch collects business information including company name, website, and contact details for the purpose of autonomous acquisition orchestration. We prioritize data minimization and only collect what is necessary for agency growth automation.</p>
+          <p>AImHighAI collects business information including company name, website, and contact details for the purpose of autonomous acquisition orchestration. We prioritize data minimization and only collect what is necessary for agency growth automation.</p>
         </section>
 
         <section>
@@ -45,7 +45,7 @@ export function TermsConditions() {
       <div className="space-y-6">
         <section>
           <h2 className="text-xl font-semibold text-white mb-3">1. Service Usage</h2>
-          <p>AgentOrch provides an autonomous acquisition and passive revenue engine. You are responsible for the legality of the niche and leads you target using our automation tools.</p>
+          <p>AImHighAI provides an autonomous acquisition and passive revenue engine. You are responsible for the legality of the niche and leads you target using our automation tools.</p>
         </section>
 
         <section>
@@ -55,7 +55,7 @@ export function TermsConditions() {
 
         <section>
           <h2 className="text-xl font-semibold text-white mb-3">3. Compliance</h2>
-          <p>Users must comply with all local and international laws regarding automated outreach and digital marketing. AgentOrch is not liable for misuse of automated sequences.</p>
+          <p>Users must comply with all local and international laws regarding automated outreach and digital marketing. AImHighAI is not liable for misuse of automated sequences.</p>
         </section>
 
         <section>

@@ -20,6 +20,16 @@ export interface Lead {
   intentContext?: string
   /** Intent Discovery only: 0-100 AI-assessed intent strength. */
   intentScore?: number
+  /** Google Maps signals used to pick the offer. */
+  rating?: number | null
+  reviewCount?: number | null
+  open24h?: boolean
+  /** Best-fit paid offer for this lead (see backend/lib/offers.ts). */
+  offerId?: string | null
+  offerName?: string | null
+  offerReason?: string | null
+  offerSetup?: number | null
+  offerMonthly?: number | null
   status: LeadStatus
   /** 0/1. Whether a human has explicitly verified this lead for autonomous outreach/invoicing — never auto-set to true. */
   consentObtained: number

@@ -1,9 +1,9 @@
 import Stripe from 'stripe';
 import { Hono } from 'hono';
-import { createClient } from '@blinkdotnew/sdk';
-import { createAndFinalizeInvoice } from './lib/stripeInvoice';
-import { trackAffiliateConversion } from './routes/affiliates';
-import { requireUserId, requireOwner } from './lib/auth';
+import { serverDb } from "./lib/db.js";
+import { createAndFinalizeInvoice } from './lib/stripeInvoice.js';
+import { trackAffiliateConversion } from './routes/affiliates.js';
+import { requireUserId, requireOwner } from './lib/auth.js';
 
 const stripeApp = new Hono<{ Bindings: Record<string, string> }>();
 
@@ -46,7 +46,7 @@ stripeApp.get('/products-with-prices', async (c) => {
   }
 });
 
-// Owner-only: creates a Stripe customer for AgentOrch's own ad-hoc invoicing/payment-link
+// Owner-only: creates a Stripe customer for AImHighAI's own ad-hoc invoicing/payment-link
 // flow (Billing page "Request Custom Invoice"/"Generate Payment Link"), not a tenant's lead.
 stripeApp.post('/create-customer', async (c) => {
   const env = c.env as Record<string, string>;
@@ -89,7 +89,7 @@ stripeApp.post('/create-subscription', async (c) => {
 });
 
 // Hosted Stripe Checkout — the real, working way to collect payment (redirect, no card
-// element needed). Any authenticated user can subscribe to AgentOrch itself; the
+// element needed). Any authenticated user can subscribe to AImHighAI itself; the
 // verified userId is stamped into the session metadata so the webhook can tie the
 // resulting subscriber record back to the right tenant account.
 stripeApp.post('/create-checkout-session', async (c) => {
@@ -118,7 +118,7 @@ stripeApp.post('/create-checkout-session', async (c) => {
   }
 });
 
-// Owner-only: AgentOrch's own ad-hoc payment link, not a tenant's lead invoice.
+// Owner-only: AImHighAI's own ad-hoc payment link, not a tenant's lead invoice.
 stripeApp.post('/create-payment-link', async (c) => {
   const env = c.env as Record<string, string>;
   try {
@@ -138,7 +138,7 @@ stripeApp.post('/create-payment-link', async (c) => {
   }
 });
 
-// Owner-only: AgentOrch's own ad-hoc invoice, not a tenant's lead invoice (those go
+// Owner-only: AImHighAI's own ad-hoc invoice, not a tenant's lead invoice (those go
 // through the Invoicing agent in orchestrator.ts, scoped to that tenant already).
 stripeApp.post('/create-one-off-invoice', async (c) => {
   const env = c.env as Record<string, string>;
@@ -157,7 +157,7 @@ stripeApp.post('/create-one-off-invoice', async (c) => {
     // up by /reminders/run, and get marked paid by the Stripe webhook — otherwise
     // they only exist in Stripe and are invisible to the rest of the app.
     try {
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+      const blink = serverDb(env);
       await blink.db.invoices.create({
         id: crypto.randomUUID(),
         userId: ownerId,
@@ -191,7 +191,7 @@ stripeApp.post('/webhook', async (c) => {
   try {
     if (event.type === 'invoice.paid' || event.type === 'invoice.payment_succeeded') {
       const stripeInvoice = event.data.object as Stripe.Invoice;
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+      const blink = serverDb(env);
       const matches = await blink.db.invoices.list({ where: { stripeInvoiceId: stripeInvoice.id }, limit: 1 }) as any[];
       const localInvoice = matches[0];
       if (localInvoice && localInvoice.status !== 'paid') {
@@ -220,7 +220,7 @@ stripeApp.post('/webhook', async (c) => {
       // from client input directly).
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === 'subscription') {
-        const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+        const blink = serverDb(env);
         await blink.db.subscribers.create({
           id: crypto.randomUUID(),
           userId: session.metadata?.userId || '',
@@ -232,14 +232,14 @@ stripeApp.post('/webhook', async (c) => {
       }
     } else if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
       const subscription = event.data.object as Stripe.Subscription;
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+      const blink = serverDb(env);
       const matches = await blink.db.subscribers.list({ where: { stripeSubscriptionId: subscription.id }, limit: 1 }) as any[];
       if (matches[0]) {
         await blink.db.subscribers.update(matches[0].id, { status: event.type === 'customer.subscription.deleted' ? 'canceled' : subscription.status });
       }
     } else if (event.type === 'invoice.voided' || event.type === 'invoice.marked_uncollectible') {
       const stripeInvoice = event.data.object as Stripe.Invoice;
-      const blink = createClient({ projectId: env.BLINK_PROJECT_ID, secretKey: env.BLINK_SECRET_KEY });
+      const blink = serverDb(env);
       const matches = await blink.db.invoices.list({ where: { stripeInvoiceId: stripeInvoice.id }, limit: 1 }) as any[];
       const localInvoice = matches[0];
       if (localInvoice) {

@@ -1,0 +1,28 @@
+:root{--bg:#0b1020;--card:#121a30;--ink:#e8ecf5;--mute:#9aa6c2;--teal:#2dd4bf;--amber:#fbbf24;--line:#22304f}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:var(--teal)}
+.wrap{max-width:860px;margin:0 auto;padding:24px 20px 64px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.top a.brand{color:var(--ink);font-weight:800;text-decoration:none;font-size:20px}
+.top nav a{margin-left:16px;color:var(--mute);text-decoration:none;font-size:15px}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.15;margin:28px 0 12px}
+h2{font-size:24px;margin:36px 0 10px}h3{font-size:19px;margin:24px 0 6px}
+.lead{font-size:20px;color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin:20px 0}
+.value{display:inline-block;background:#3b2f0b;color:var(--amber);border:1px solid #6b5212;border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px}
+.btn{display:inline-block;background:var(--teal);color:#04201c;font-weight:800;border:0;border-radius:10px;padding:14px 22px;font-size:17px;cursor:pointer;text-decoration:none}
+.btn:disabled{opacity:.6;cursor:wait}
+label{display:block;font-size:14px;color:var(--mute);margin:12px 0 4px}
+input,select{width:100%;padding:12px;border-radius:9px;border:1px solid var(--line);background:#0d1428;color:var(--ink);font-size:16px}
+.check{display:flex;gap:10px;align-items:flex-start;margin:16px 0;font-size:14px;color:var(--mute)}
+.check input{width:auto;margin-top:4px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.big{font-size:42px;font-weight:800;color:var(--amber)}
+.msg{margin-top:12px;font-weight:600}.ok{color:var(--teal)}.err{color:#f87171}
+.legal h2{font-size:20px}.legal p,.legal li{color:#cdd5e6}
+.foot{border-top:1px solid var(--line);padding:22px 20px;color:var(--mute);font-size:14px;text-align:center}
+.foot a{color:var(--mute);margin:0 8px}
+blockquote{border-left:4px solid var(--teal);margin:18px 0;padding:6px 16px;color:var(--mute)}
+small.src{color:var(--mute)}
