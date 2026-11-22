@@ -8,7 +8,8 @@ import backend from "../backend/index.js";
 // waitUntil so the orchestrator keeps running after it responds.
 const app = new Hono().basePath("/api");
 app.use("*", async (c, next) => {
-  c.env = process.env as Record<string, string>;
+  // Trim values: keys pasted into the Vercel dashboard often carry a stray space or newline.
+  c.env = Object.fromEntries(Object.entries(process.env).map(([k, v]) => [k, (v ?? "").trim()])) as Record<string, string>;
   Object.defineProperty(c, "executionCtx", {
     value: { waitUntil, passThroughOnException: () => {}, props: {} },
     configurable: true,

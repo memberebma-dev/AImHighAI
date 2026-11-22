@@ -42,7 +42,7 @@ app.get("/", async (c) => {
     try {
       await timed(new Stripe(env.STRIPE_SECRET_KEY).balance.retrieve());
       checks.stripe.ok = true;
-    } catch (e: any) { checks.stripe = { ...checks.stripe, ok: false, detail: e.message }; }
+    } catch (e: any) { checks.stripe = { ...checks.stripe, ok: false, detail: `${e.type || ""} ${e.message}`.trim() }; }
   }
 
   checks.resend = { configured: !!env.RESEND_API_KEY, ok: null };
@@ -54,7 +54,12 @@ app.get("/", async (c) => {
         const body = (await r.json()) as any;
         const verified = (body?.data || []).filter((d: any) => d.status === "verified").map((d: any) => d.name);
         checks.resend.detail = verified.length ? `verified domains: ${verified.join(", ")}` : "no verified sending domain yet";
-      } else checks.resend.detail = `HTTP ${r.status}`;
+      } else {
+        const body = (await r.json().catch(() => ({}))) as any;
+        // A sending-only key can't list domains; that still means the key is real.
+        if (body?.name === "restricted_api_key") { checks.resend.ok = true; checks.resend.detail = "sending-only key (OK)"; }
+        else checks.resend.detail = `HTTP ${r.status}${body?.message ? `: ${body.message}` : ""}`;
+      }
     } catch (e: any) { checks.resend = { ...checks.resend, ok: false, detail: e.message }; }
   }
 
