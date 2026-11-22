@@ -2,6 +2,7 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /go/
 
 # AI training crawlers are not allowed; AI search/citation bots above are.
 User-agent: GPTBot
