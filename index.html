@@ -3,173 +3,140 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="theme-color" content="#0D9488" />
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-    <title>AImHighAI — Autonomous AI Sales Pipeline Engine</title>
-    <meta name="description" content="AImHighAI autonomously discovers leads, audits their online presence, scores conversion potential, and sends personalized outreach until they convert. No cold calls required." />
-    <meta name="keywords" content="AI sales pipeline, autonomous lead generation, B2B prospecting, AI outreach, sales automation" />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+
+    <title>AImHighAI — AI Lead Generation for Local Service Businesses</title>
+    <meta name="description" content="AImHighAI finds local businesses on Google Maps that are missing a website, reviews or after-hours coverage, scores each lead, matches it to the offer it is most likely to buy, writes the outreach, and bills monthly plans through Stripe." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="author" content="AImHighAI" />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="AImHighAI — Autonomous AI Sales Pipeline Engine" />
-    <meta property="og:description" content="Autonomous lead discovery, scoring, asset generation, and multi-step outreach that runs while you sleep." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://aimhighai.vercel.app/" />
-    <meta property="og:site_name" content="AImHighAI" />
-    <meta property="og:image" content="https://aimhighai.vercel.app/og-cover.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="AImHighAI — Autonomous AI Sales Pipeline Engine" />
-    <meta property="og:locale" content="en_US" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AImHighAI — Autonomous AI Sales Pipeline Engine" />
-    <meta name="twitter:description" content="Autonomous lead discovery, scoring, asset generation, and multi-step outreach that runs while you sleep." />
-    <meta name="twitter:image" content="https://aimhighai.vercel.app/og-cover.png" />
-    <meta name="twitter:image:alt" content="AImHighAI — Autonomous AI Sales Pipeline Engine" />
-
-    <!-- Canonical -->
     <link rel="canonical" href="https://aimhighai.vercel.app/" />
 
-    <!-- Structured Data: Organization + WebSite + SoftwareApplication + FAQPage -->
+    <!-- Open Graph (Facebook, LinkedIn, iMessage, Slack) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AImHighAI" />
+    <meta property="og:url" content="https://aimhighai.vercel.app/" />
+    <meta property="og:title" content="AImHighAI — Find the local businesses that need you most" />
+    <meta property="og:description" content="AI lead generation for local services: Google Maps leads, website and review gap scoring, matched offers, personalized outreach and monthly billing." />
+    <meta property="og:image" content="https://aimhighai.vercel.app/og-cover.png" />
+    <meta property="og:image:secure_url" content="https://aimhighai.vercel.app/og-cover.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="AImHighAI — Find the local businesses that need you most" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AImHighAI — Find the local businesses that need you most" />
+    <meta name="twitter:description" content="AI lead generation for local services: Google Maps leads, gap scoring, matched offers, outreach and monthly billing." />
+    <meta name="twitter:image" content="https://aimhighai.vercel.app/og-cover.png" />
+    <meta name="twitter:image:alt" content="AImHighAI — Find the local businesses that need you most" />
+
+    <!-- Structured data for search engines and AI answer engines -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "AImHighAI",
-      "url": "https://aimhighai.vercel.app",
-      "logo": "https://aimhighai.vercel.app/favicon.svg",
-      "description": "Autonomous AI-powered sales pipeline engine that discovers leads, audits online presence, scores conversion potential, and runs multi-step outreach automatically.",
-      "sameAs": []
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "AImHighAI",
-      "url": "https://aimhighai.vercel.app",
-      "description": "Autonomous AI Sales Pipeline — discover leads, audit presence, score potential, and convert on autopilot.",
-      "inLanguage": "en-US",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://aimhighai.vercel.app/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "AImHighAI",
-      "applicationCategory": "BusinessApplication",
-      "applicationSubCategory": "Sales Automation Software",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "4997",
-        "priceCurrency": "USD"
-      },
-      "description": "Autonomous sales pipeline that discovers leads, audits online presence, scores conversion potential, and runs multi-step email outreach.",
-      "featureList": "Lead Discovery, Presence Scoring, Asset Generation, Multi-Step Outreach, Stripe Invoicing, Pipeline Analytics"
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
+      "@graph": [
         {
-          "@type": "Question",
-          "name": "What does AImHighAI do?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "AImHighAI is an autonomous AI sales pipeline. It discovers leads in any niche and location using Google Maps with an AI fallback, audits their online presence (website, reviews, ratings), scores conversion potential 0–99, generates AI audit reports and preview assets, and sends multi-step personalized email outreach until the lead converts or the sequence ends."
-          }
+          "@type": "Organization",
+          "@id": "https://aimhighai.vercel.app/#org",
+          "name": "AImHighAI",
+          "url": "https://aimhighai.vercel.app/",
+          "logo": "https://aimhighai.vercel.app/favicon.svg",
+          "image": "https://aimhighai.vercel.app/og-cover.png",
+          "description": "AI lead generation and outreach platform for agencies and marketers who sell websites, reviews, call handling and local SEO to local service businesses."
         },
         {
-          "@type": "Question",
-          "name": "How does lead discovery work?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "AImHighAI first tries the Google Maps Places API for real businesses in the target niche and location. If Maps is unavailable (billing not enabled, REQUEST_DENIED, or quota exceeded), it falls back to AI-based discovery using a large language model to suggest real businesses in that market. Every lead is then deduplicated against your existing pipeline and scored on real web-presence signals."
-          }
+          "@type": "WebSite",
+          "@id": "https://aimhighai.vercel.app/#website",
+          "url": "https://aimhighai.vercel.app/",
+          "name": "AImHighAI",
+          "publisher": { "@id": "https://aimhighai.vercel.app/#org" },
+          "inLanguage": "en-US"
         },
         {
-          "@type": "Question",
-          "name": "How is a lead scored?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Leads are scored 0–99 based on real digital-presence signals: missing website, low review count, low rating, and missing phone. Higher scores indicate bigger gaps — meaning more room for your services to add value. The score is fully deterministic and shown alongside a conversion-likelihood estimate and the specific issues that drove it."
-          }
+          "@type": "SoftwareApplication",
+          "name": "AImHighAI",
+          "applicationCategory": "BusinessApplication",
+          "applicationSubCategory": "Lead generation and sales automation",
+          "operatingSystem": "Web",
+          "url": "https://aimhighai.vercel.app/",
+          "publisher": { "@id": "https://aimhighai.vercel.app/#org" },
+          "description": "Finds local businesses on Google Maps, scores their website, review and call-handling gaps, matches each to a paid offer, writes personalized outreach, and bills one-time and monthly plans through Stripe.",
+          "featureList": [
+            "Google Maps lead discovery for any niche and city",
+            "Gap scoring: missing or free website, few reviews, low rating, 24-hour service",
+            "Offer matching: website build, review growth, missed-call text-back, local SEO",
+            "AI-written outreach that cites each lead's real details",
+            "Consent gate before any email is sent",
+            "Stripe invoices and monthly subscriptions",
+            "Intent discovery from public posts asking for help"
+          ]
         },
         {
-          "@type": "Question",
-          "name": "Does AImHighAI send emails on its own?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes — once a lead passes your threshold and you mark it as consent-verified, AImHighAI runs a multi-step outreach sequence with personalized AI-written emails, follow-ups, and conversion tracking. Sending uses SendGrid by default. You can stop any sequence at any time."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How does billing work?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "AImHighAI uses Stripe to create and finalize invoices for leads you convert. The default growth package price is configurable in Settings. Stripe webhook events keep invoice status in sync automatically. Subscription tiers unlock higher lead caps and team features."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Who is AImHighAI for?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Agency owners, B2B service providers, consultants, and sales teams who want a hands-off outbound pipeline. Works for any niche — restaurants, contractors, real estate agents, SaaS companies, professional services — because lead discovery is query-driven, not vertical-specific."
-          }
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What does AImHighAI do?",
+              "acceptedAnswer": { "@type": "Answer", "text": "AImHighAI finds local service businesses on Google Maps, scores the gaps in their online presence, matches each one to the paid offer it is most likely to buy, writes personalized outreach, and bills the client through Stripe." }
+            },
+            {
+              "@type": "Question",
+              "name": "How does AImHighAI find leads?",
+              "acceptedAnswer": { "@type": "Answer", "text": "You choose a niche and a city, such as plumbers in Hattiesburg, MS. AImHighAI searches Google Maps and returns real businesses with their phone number, website, rating and review count, skipping businesses already in your pipeline." }
+            },
+            {
+              "@type": "Question",
+              "name": "Which businesses does it rank highest?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Businesses with the biggest fixable gaps: no website or only a free page-builder site, few Google reviews, a low rating, or 24-hour service with no way to catch missed calls. Those owners have the clearest reason to buy." }
+            },
+            {
+              "@type": "Question",
+              "name": "What offers can I sell with it?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Each lead is matched to one offer: a website build with monthly care, a review growth plan, missed-call text-back for emergency services, or Google profile and local SEO management. Prices are editable." }
+            },
+            {
+              "@type": "Question",
+              "name": "Does AImHighAI send emails automatically?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Only for leads you have verified. Every new lead starts unverified, and outreach is sent only after you mark it verified, so nothing goes out without your review." }
+            },
+            {
+              "@type": "Question",
+              "name": "How does billing work?",
+              "acceptedAnswer": { "@type": "Answer", "text": "One-time offers are billed with a Stripe invoice. Monthly offers start a Stripe subscription billed by emailed invoice, with any setup fee added to the first invoice." }
+            }
+          ]
         }
       ]
     }
     </script>
   </head>
   <body>
-    <div id="root"></div>
-    <!-- SEO/AI-engine visible content fallback (hidden from users, readable by crawlers) -->
-    <section aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">
-      <h1>AImHighAI — Autonomous AI Sales Pipeline Engine</h1>
-      <p>AImHighAI is an autonomous AI sales pipeline that discovers leads, audits their online presence, scores conversion potential, generates AI-written assets, and runs multi-step personalized email outreach until the lead converts or the sequence ends. No cold calls, no manual prospecting.</p>
-      <h2>What does AImHighAI do?</h2>
-      <p>AImHighAI runs a full outbound sales pipeline automatically. You point it at any market — restaurants, contractors, real estate agents, SaaS companies, professional services — and it discovers real businesses, scores their digital presence from 0–99, generates AI audit reports and preview assets, and sends personalized email sequences with follow-ups until the lead converts. The system works for any niche because lead discovery is query-driven, not vertical-specific.</p>
-      <h2>How does lead discovery work?</h2>
-      <p>Lead discovery first tries the Google Maps Places API for real businesses in the target niche and location. If Maps is unavailable — billing not enabled, REQUEST_DENIED, or quota exceeded — it falls back to AI-based discovery using a large language model to suggest real businesses in that market. Every lead is then deduplicated against your existing pipeline and scored on real web-presence signals like missing website, low review count, low rating, and missing phone.</p>
-      <h2>How is a lead scored?</h2>
-      <p>Leads are scored 0–99 based on real digital-presence signals: missing website (28 points), below-average review count (7–15 points), low rating under 3.5 (10 points), and missing phone (5 points). Higher scores indicate bigger gaps — meaning more room for your services to add value. The score is fully deterministic and shown alongside a conversion-likelihood estimate and the specific issues that drove it.</p>
-      <h2>Does AImHighAI send emails on its own?</h2>
-      <p>Yes — once a lead passes your threshold (default 60) and you mark it as consent-verified, AImHighAI runs a multi-step outreach sequence with personalized AI-written emails, follow-ups, and conversion tracking. Sending uses SendGrid by default with a Resend fallback. You can stop any sequence at any time from the Outreach page.</p>
-      <h2>How does billing work?</h2>
-      <p>AImHighAI uses Stripe to create and finalize invoices for leads you convert. The default growth package price is configurable in Settings (default $4,997). Stripe webhook events keep invoice status in sync automatically, and failed payments trigger a three-step reminder sequence. Subscription tiers unlock higher lead caps and team features.</p>
-      <h2>Who is AImHighAI for?</h2>
-      <p>Agency owners, B2B service providers, consultants, and sales teams who want a hands-off outbound pipeline. Works for any niche because lead discovery is query-driven. Best for service providers who can show a tangible digital-presence gap (no website, low reviews, low rating) and turn it into a paid engagement.</p>
-      <h2>Key features</h2>
-      <ul>
-        <li>Lead Discovery — Google Maps with AI fallback across any niche and location</li>
-        <li>Presence Scoring — Real web-presence analysis 0–99 (website, reviews, ratings), no fake scores</li>
-        <li>Asset Generation — AI-generated preview sites, SEO audits, and sales scripts per lead</li>
-        <li>Multi-Step Outreach — Automated email sequences with follow-ups until conversion</li>
-        <li>Stripe Invoicing — Convert scored leads into paid invoices with one click</li>
-        <li>Pipeline Analytics — Full funnel visibility: leads → scored → audited → invoiced</li>
-      </ul>
-    </section>
-    <noscript>
-      <h1>AImHighAI — Autonomous AI Sales Pipeline Engine</h1>
-      <p>AImHighAI autonomously discovers leads, audits their online presence, scores conversion potential, and sends personalized outreach until they convert. <a href="/login">Sign in</a> to access the dashboard.</p>
-    </noscript>
+    <!-- Server-rendered summary inside #root: readable by search and AI crawlers that don't run JavaScript, replaced by the app on load. -->
+    <div id="root">
+      <main style="font-family:system-ui,-apple-system,sans-serif;background:#0B1220;color:#CBD5E1;min-height:100vh;padding:48px 24px;line-height:1.6">
+        <div style="max-width:720px;margin:0 auto">
+          <h1 style="color:#fff;font-size:2rem;line-height:1.2">AImHighAI — AI lead generation for local service businesses</h1>
+          <p>AImHighAI finds local businesses on Google Maps that are missing a website, reviews or after-hours coverage, scores each lead, matches it to the offer it is most likely to buy, writes the outreach, and bills monthly plans through Stripe.</p>
+          <h2 style="color:#fff;font-size:1.2rem">How it works</h2>
+          <ol>
+            <li>Pick a niche and a city, for example plumbers in Hattiesburg, MS.</li>
+            <li>AImHighAI pulls real businesses from Google Maps with phone, website, rating and review count.</li>
+            <li>Each lead is scored on real gaps and matched to one offer: website build, review growth, missed-call text-back, or local SEO.</li>
+            <li>It writes outreach that cites the lead's own details, and sends only after you verify the lead.</li>
+            <li>When a lead says yes, it bills a Stripe invoice or starts a monthly subscription.</li>
+          </ol>
+          <h2 style="color:#fff;font-size:1.2rem">Who it is for</h2>
+          <p>Agencies, freelancers and marketers who sell websites, reputation management, call handling or local SEO to plumbers, HVAC companies, roofers, lawyers, dentists and other local service businesses.</p>
+          <p><a href="/llms.txt" style="color:#2DD4BF">Product summary for AI assistants (llms.txt)</a></p>
+        </div>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
-</html> 
+</html>

@@ -1,23 +1,9 @@
+# Search engines, AI answer engines and link previews (Facebook, LinkedIn, Slack) may index the public site.
 User-agent: *
 Allow: /
+Disallow: /api/
 
-# AI search bots — allow citation
-User-agent: OAI-SearchBot
-Allow: /
-
-User-agent: Claude-SearchBot
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-# Block AI training crawlers
+# AI training crawlers are not allowed; AI search/citation bots above are.
 User-agent: GPTBot
 Disallow: /
 
@@ -27,12 +13,4 @@ Disallow: /
 User-agent: Google-Extended
 Disallow: /
 
-# Block private paths
-User-agent: *
-Disallow: /api/
-Disallow: /stripe/
-
 Sitemap: https://aimhighai.vercel.app/sitemap.xml
-
-# AI discoverability
-# llms.txt: https://aimhighai.vercel.app/llms.txt

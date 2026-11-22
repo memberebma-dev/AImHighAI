@@ -35,7 +35,7 @@ export async function discoverLeadsFromMaps(
 ): Promise<DiscoveryResult> {
   // Prefer treg (one token, no Google Cloud billing setup); otherwise the
   // team's own Google Maps key.
-  if (env.TREG_TOKEN) return discoverLeadsViaTreg(env.TREG_TOKEN, niche, location, maxResults, excludeNames);
+  if (env.TREG_TOKEN) return discoverLeadsViaTreg(env.TREG_TOKEN, env.TREG_ORG || "", niche, location, maxResults, excludeNames);
   const mapsKey = env.GOOGLE_MAPS_API_KEY || "";
   if (!mapsKey) {
     return { places: [], diagnostic: "Neither TREG_TOKEN nor GOOGLE_MAPS_API_KEY is configured." };
@@ -131,6 +131,7 @@ export function placeFromTregRow(row: any, fallbackAddress: string): PlaceResult
 /** Google Maps business search through treg (credential held by treg, billed per call). */
 export async function discoverLeadsViaTreg(
   token: string,
+  org: string,
   niche: string,
   location: string,
   maxResults: number,
@@ -139,7 +140,8 @@ export async function discoverLeadsViaTreg(
   try {
     const res = await fetch(TREG_MAPS_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Treg-Token": token },
+      // A personal sign-in token also needs the team; harmless for team tokens.
+      headers: { "Content-Type": "application/json", "X-Treg-Token": token, ...(org ? { "X-Treg-Org": org } : {}) },
       // Ask for extra rows so already-known businesses don't leave us short.
       body: JSON.stringify({ query: niche, location, limit: Math.min(100, maxResults + excludeNames.size + 10) }),
       signal: AbortSignal.timeout(45_000),

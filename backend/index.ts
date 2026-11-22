@@ -108,6 +108,8 @@ app.route("/webhooks/email", emailWebhookApp);
 app.route("/preview", previewApp);
 
 import stripeApp from "./stripe.js";
+import healthApp from "./routes/health.js";
 app.route("/stripe", stripeApp);
+app.route("/health", healthApp);
 
 export default app;
