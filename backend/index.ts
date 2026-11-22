@@ -109,7 +109,9 @@ app.route("/preview", previewApp);
 
 import stripeApp from "./stripe.js";
 import healthApp from "./routes/health.js";
+import { optinApp } from "./routes/optin.js";
 app.route("/stripe", stripeApp);
 app.route("/health", healthApp);
+app.route("/optin", optinApp);
 
 export default app;

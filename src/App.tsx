@@ -89,6 +89,9 @@ function LoginForm() {
       <Button type="submit" disabled={sending} className="w-full h-12 bg-teal-600 hover:bg-teal-500 text-lg font-semibold">
         {sending ? 'Sending…' : 'Email me a sign-in link'}
       </Button>
+      <p className="text-xs text-slate-500 text-center pt-2">
+        <a href="/free-audit" className="text-teal-400">Free Lead Leak Audit</a> · <a href="/missed-call-calculator" className="hover:text-slate-300">Calculator</a> · <a href="/privacy" className="hover:text-slate-300">Privacy</a> · <a href="/terms" className="hover:text-slate-300">Terms</a>
+      </p>
     </form>
   )
 }

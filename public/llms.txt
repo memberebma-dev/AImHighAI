@@ -29,4 +29,10 @@ Agencies, freelancers and marketers selling websites, reputation management, cal
 ## Links
 
 - Home: https://aimhighai.vercel.app/
-- Legal: https://aimhighai.vercel.app/#legal
+- Free Lead Leak Audit for local service businesses: https://aimhighai.vercel.app/free-audit
+- Missed call cost calculator: https://aimhighai.vercel.app/missed-call-calculator
+- Guide, what missed calls cost plumbers: https://aimhighai.vercel.app/guides/plumbers-missed-calls
+- Privacy: https://aimhighai.vercel.app/privacy
+- Terms: https://aimhighai.vercel.app/terms
+- Disclaimers: https://aimhighai.vercel.app/disclaimer
+- Security: https://aimhighai.vercel.app/security
