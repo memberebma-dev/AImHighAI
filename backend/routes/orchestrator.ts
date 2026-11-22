@@ -7,11 +7,12 @@ import { matchOffer, firstYearValue } from "../lib/offers.js";
 import { discoverIntentLeads } from "../lib/intentDiscovery.js";
 import { findOrCreateCustomer, createAndFinalizeInvoice, createRetainerSubscription } from "../lib/stripeInvoice.js";
 import { BACKEND_URL } from "../lib/config.js";
+import { BATCH_LIMIT, DEFAULT_DISCOUNT_PCT, MAX_COMPETITORS, cityFromAddress, pickCompetitors, repurposedOffer, buildNoHardFeelingsEmail } from "../lib/repurpose.js";
 
 export async function runOrchestration(
   env: Record<string, string>,
   userId: string,
-  body: { runId: string; agentName: string; leadId?: string; niche?: string; location?: string; amount?: number; threshold?: number }
+  body: { runId: string; agentName: string; leadId?: string; niche?: string; location?: string; amount?: number; threshold?: number; discountPct?: number }
 ) {
   const blink = serverDb(env);
   const mapsKey = env.GOOGLE_MAPS_API_KEY || "";
@@ -168,6 +169,7 @@ export async function runOrchestration(
       const threshold = leadScoreThreshold;
       const outreachLeads = await blink.db.leads.list({ where: { userId, status: "outreach_sent" }, limit: 50 }) as any[];
       let promoted = 0, expired = 0;
+      const expiredLeads: any[] = [];
       for (const lead of outreachLeads) {
         const scores = await blink.db.leadScores.list({ where: { leadId: lead.id, userId }, limit: 1 }) as any[];
         const score = scores[0]?.overallScore || lead.leadScore || 0;
@@ -178,14 +180,20 @@ export async function runOrchestration(
         // not just ones scored in the first 7 days. Only past 14 days with no
         // reply and no qualifying score does a lead actually expire.
         else if (score >= threshold && daysSince <= 14) { await blink.db.leads.update(lead.id, { status: "qualified" }); promoted++; }
-        else if (daysSince > 14) { await blink.db.leads.update(lead.id, { status: "lost" }); expired++; }
+        else if (daysSince > 14) { await blink.db.leads.update(lead.id, { status: "lost" }); expired++; expiredLeads.push(lead); }
+      }
+      // Expired leads go straight to the repurposer (capped; the rest wait for
+      // the next run or a manual "Repurposing" batch).
+      const repurposed: string[] = [];
+      for (const lead of expiredLeads.slice(0, BATCH_LIMIT)) {
+        repurposed.push(await repurposeLostLead(blink, userId, env, lead, DEFAULT_DISCOUNT_PCT, hasEmailProvider));
       }
       const respondedLeads = await blink.db.leads.list({ where: { userId, status: "responded" }, limit: 50 }) as any[];
       for (const lead of respondedLeads) {
         const scores = await blink.db.leadScores.list({ where: { leadId: lead.id, userId }, limit: 1 }) as any[];
         if ((scores[0]?.overallScore || 0) >= threshold) { await blink.db.leads.update(lead.id, { status: "proposal" }); promoted++; }
       }
-      await updateRun("success", 100, `Qualifying complete: ${promoted} advanced, ${expired} expired. Threshold: ${threshold}/100.`);
+      await updateRun("success", 100, `Qualifying complete: ${promoted} advanced, ${expired} expired. Threshold: ${threshold}/100.${repurposed.length ? ` Repurposed: ${repurposed.join(" | ")}` : ""}`);
       return;
     }
 
@@ -217,12 +225,27 @@ export async function runOrchestration(
     }
 
     // ─── Repurposing ──────────────────────────────────────────────────────────
+    // With a leadId: mark that lead lost and repurpose it. Without: repurpose
+    // lost leads that haven't been repurposed yet (up to BATCH_LIMIT).
     if (agentName === "Repurposing") {
-      if (!leadId) throw new Error("leadId required");
-      const leads = await blink.db.leads.list({ where: { id: leadId, userId }, limit: 1 }) as any[];
-      if (!leads[0]) throw new Error("Lead not found");
-      await blink.db.leads.update(leadId, { status: "lost" });
-      await updateRun("success", 100, "Lead marked lost. Assets freed for repurposing.");
+      const discountPct = Number.isFinite(Number(body.discountPct)) ? Number(body.discountPct) : DEFAULT_DISCOUNT_PCT;
+      let targets: any[];
+      if (leadId) {
+        const leads = await blink.db.leads.list({ where: { id: leadId, userId }, limit: 1 }) as any[];
+        if (!leads[0]) throw new Error("Lead not found");
+        if (leads[0].repurposedAt) { await updateRun("success", 100, `${leads[0].companyName} was already repurposed.`); return; }
+        await blink.db.leads.update(leadId, { status: "lost" });
+        targets = [leads[0]];
+      } else {
+        targets = await blink.db.leads.list({ where: { userId, status: "lost", repurposedAt: null }, limit: BATCH_LIMIT }) as any[];
+        if (targets.length === 0) { await updateRun("success", 100, "No lost leads waiting to be repurposed."); return; }
+      }
+      const summaries: string[] = [];
+      for (let i = 0; i < targets.length; i++) {
+        await updateRun("running", 5 + Math.round((i / targets.length) * 90), `Repurposing ${targets[i].companyName}: finding competitors...`);
+        summaries.push(await repurposeLostLead(blink, userId, env, targets[i], discountPct, hasEmailProvider));
+      }
+      await updateRun("success", 100, summaries.join(" | "));
       return;
     }
 
@@ -320,6 +343,54 @@ async function invoiceLead(blink: any, userId: string, env: Record<string, strin
 async function fetchExistingCompanyNames(blink: any, userId: string): Promise<Set<string>> {
   const leads = await blink.db.leads.list({ where: { userId }, limit: 1000 }) as any[];
   return new Set(leads.map((l: any) => (l.companyName || "").trim().toLowerCase()).filter(Boolean));
+}
+
+/**
+ * Repurposes one lost lead: finds its nearest competitors (same niche, same
+ * city), adds each as a new lead priced below the lost lead's offer, builds
+ * each one's audit and website preview from ITS OWN Maps data (never the lost
+ * lead's), and sends the lost lead a "no hard feelings" email. New leads start
+ * unverified, so outreach to them still waits for the Leads-page check.
+ * Returns a one-line summary for the run log.
+ */
+async function repurposeLostLead(blink: any, userId: string, env: Record<string, string>, lead: any, discountPct: number, hasEmailProvider: boolean): Promise<string> {
+  const niche = lead.niche || "plumber";
+  const city = cityFromAddress(lead.location);
+  if (!city) return `${lead.companyName}: no location on file, skipped.`;
+  const excludeNames = await fetchExistingCompanyNames(blink, userId);
+  const { places, diagnostic } = await discoverLeadsFromMaps(env, niche, city, MAX_COMPETITORS * 3, excludeNames);
+  // Discovery itself failed (missing keys, API error): leave it unmarked so a later run retries.
+  if (places.length === 0 && diagnostic) return `${lead.companyName}: competitor search failed (${diagnostic})`;
+  const competitors = pickCompetitors(places, lead, excludeNames, MAX_COMPETITORS);
+
+  for (const place of competitors) {
+    const id = crypto.randomUUID();
+    const offer = repurposedOffer(place, discountPct);
+    const { overallScore, conversionLikelihood, issues } = scoreLeadFromPresence(place);
+    await blink.db.leads.create({
+      id, userId, companyName: place.companyName, website: place.website || "", phone: place.phone || "", contactEmail: "", contactName: "",
+      source: `Repurposed from ${lead.companyName}`, dataSource: "google_maps", niche, location: place.address || city,
+      status: "scored", leadScore: overallScore, consentObtained: 0, repurposedFrom: lead.id,
+      ...placeSignals(place), offerSetup: offer.setupPrice, offerMonthly: offer.monthlyPrice,
+    });
+    await blink.db.leadScores.create({ id: crypto.randomUUID(), userId, leadId: id, overallScore, conversionLikelihood, issuesJson: JSON.stringify(issues), potentialServicesValue: firstYearValue(offer) });
+    const ctx = { ...place, id, niche, location: place.address || city };
+    const audit = JSON.stringify(await buildAuditReportData(env, ctx, overallScore, issues));
+    await blink.db.generatedAssets.create({ id: crypto.randomUUID(), userId, leadId: id, type: "audit_report", hostedUrl: `${BACKEND_URL}/preview/audit/${id}`, content: audit });
+    const site = JSON.stringify(await buildWebsitePreviewData(env, ctx, issues));
+    await blink.db.generatedAssets.create({ id: crypto.randomUUID(), userId, leadId: id, type: "custom_website", hostedUrl: `${BACKEND_URL}/preview/site/${id}`, content: site });
+    await blink.db.leads.update(id, { status: "audited" });
+  }
+
+  // Only email leads we were already allowed to contact.
+  let emailed = false;
+  if (competitors.length && lead.contactEmail && lead.consentObtained && hasEmailProvider) {
+    const { subject, body: text } = buildNoHardFeelingsEmail(lead, competitors[0].companyName);
+    emailed = await sendEmail(env, lead.contactEmail, subject, buildOutreachEmail(lead.contactName, lead.companyName, text));
+  }
+  await blink.db.leads.update(lead.id, { status: "lost", repurposedAt: new Date().toISOString() });
+  const names = competitors.map((c) => c.companyName).join(", ");
+  return `${lead.companyName}: ${competitors.length} competitor(s) added at ${discountPct}% off${names ? ` (${names})` : ""}; goodbye email ${emailed ? "sent" : "not sent"}.`;
 }
 
 /** Source URLs of leads already surfaced by Intent Discovery for this user, so repeat runs skip posts already turned into a lead. */
