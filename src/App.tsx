@@ -338,10 +338,10 @@ function SettingsPage() {
               { step: '03', name: 'Asset Generation', desc: 'Build the audit report + custom preview website' },
               { step: '04', name: 'Outreach', desc: 'Send value-first email to every verified, audited lead' },
               { step: '05', name: 'Invoicing', desc: 'Send a real Stripe invoice to every verified, qualified lead' },
-              { step: '06', name: 'Repurposing', desc: 'Manual — mark a specific stale lead lost from the Leads page' },
+              { step: '06', name: 'Repurposing', desc: 'Pitch every lost lead\'s offer to its top competitors at 20% off, and send the lost lead a no-hard-feelings email' },
             ].map((item) => {
               const isRunning = agentRuns?.some(r => r.agentName === item.name && r.status === 'running')
-              const disabled = item.name === 'Repurposing' || isRunning || startAgent.isPending
+              const disabled = isRunning || startAgent.isPending
               return (
                 <button
                   key={item.step}
