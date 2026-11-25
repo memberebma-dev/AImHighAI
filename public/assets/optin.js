@@ -22,9 +22,19 @@
     var offer = o ? '<div class="card"><h3 style="margin-top:0">Want this fixed for you?</h3><p>Our <b>' + esc(o.name) + "</b> plan: " +
       (o.setupPrice ? "$" + o.setupPrice + " setup + " : "") + "$" + o.monthlyPrice + "/mo. " + esc(o.pitch) + '.</p>' +
       '<a class="btn" href="mailto:memberebma@gmail.com?subject=' + encodeURIComponent("Set up " + o.name + " for " + r.business) + '">Get this set up →</a></div>' : "";
-    el.innerHTML = '<h2>' + esc(r.business) + ': <span class="big">' + r.score + '</span>/100</h2>' +
+    var today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    el.innerHTML = '<p class="print-only mute">AImHighAI · Lead Leak Audit · ' + esc(r.city || "") + " · " + today + ' · aimhighai.vercel.app</p>' +
+      '<p class="no-print"><button type="button" class="btn" id="print-report">⬇ Save as PDF / Print</button></p>' +
+      '<h2>' + esc(r.business) + ': <span class="big">' + r.score + '</span>/100</h2>' +
       (r.found ? "" : "<p>We searched Google Maps and couldn't find you. That's the biggest leak of all.</p>") +
       rows + "<h3>Your top 3 fixes</h3><ol>" + fixes + "</ol>" + comp + offer;
+    document.getElementById("print-report").addEventListener("click", function () {
+      // The browser's print window has "Save as PDF" (phones: Share → Save to Files / Print).
+      var oldTitle = document.title;
+      document.title = "Lead Leak Audit - " + r.business; // becomes the PDF file name
+      window.print();
+      setTimeout(function () { document.title = oldTitle; }, 1000);
+    });
     el.scrollIntoView({ behavior: "smooth" });
   }
 
