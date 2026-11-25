@@ -9,6 +9,10 @@ const place = (companyName: string, reviewCount: number, rating = 4.6, website =
 test("sameBusiness ignores case, punctuation and LLC", () => {
   assert.equal(sameBusiness("Joe's Plumbing LLC", "joes plumbing"), true);
   assert.equal(sameBusiness("Joe's Plumbing", "Ace Rooter"), false);
+  assert.equal(sameBusiness("Roto-Rooter Plumbing & Water Cleanup", "Roto-Rooter of Hattiesburg"), true);
+  assert.equal(sameBusiness("Pierce Plumbing", "Pierce Plumbing Heating & Air"), true);
+  assert.equal(sameBusiness("Smith Plumbing", "Jones Plumbing"), false);
+  assert.equal(sameBusiness("Plumbing", "Jones Plumbing"), false);
 });
 
 test("not found on Maps -> score 0, site-build offer, claim-profile fix first", () => {

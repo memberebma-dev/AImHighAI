@@ -26,12 +26,23 @@ export interface AuditReport {
 
 const normalize = (s: string) => s.toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
+// Words that don't identify a business on their own ("Smith Plumbing & Heating LLC" -> "smith").
+const GENERIC = new Set("llc inc co company the of and a an services service plumbing plumber plumbers heating cooling air hvac electric electrical electrician roofing roofer drain drains sewer water cleanup repair repairs pros pro group home solutions contractors contractor".split(" "));
+const keyWords = (s: string) => normalize(s).split(" ").filter((w) => w.length > 1 && !GENERIC.has(w));
+
 /** True when two business names refer to the same place ("Joe's Plumbing LLC" ~ "joes plumbing"). */
 export function sameBusiness(a: string, b: string): boolean {
   const x = normalize(a).replace(/\b(llc|inc|co|company|the)\b/g, "").trim();
   const y = normalize(b).replace(/\b(llc|inc|co|company|the)\b/g, "").trim();
   if (!x || !y) return false;
-  return x === y || x.includes(y) || y.includes(x);
+  if (x === y) return true;
+  // A bare trade word ("Plumbing") never matches someone else's business.
+  const ka = keyWords(a), kb = new Set(keyWords(b));
+  if (!ka.length || !kb.size) return false;
+  if (x.includes(y) || y.includes(x)) return true;
+  // Otherwise every distinctive word of the shorter name must appear in the longer one.
+  const [small, big] = ka.length <= kb.size ? [ka, kb] : [[...kb], new Set(ka)];
+  return small.every((w) => big.has(w));
 }
 
 const POINTS: Record<Severity, number> = { good: 25, warn: 12, bad: 0 };
