@@ -4,6 +4,8 @@ import { serverDb } from "./lib/db.js";
 import { createAndFinalizeInvoice } from './lib/stripeInvoice.js';
 import { trackAffiliateConversion } from './routes/affiliates.js';
 import { requireUserId, requireOwner } from './lib/auth.js';
+import { isOfferId, offerCheckoutParams } from './lib/offers.js';
+import { sendEmail, SITE_URL } from './lib/email.js';
 
 const stripeApp = new Hono<{ Bindings: Record<string, string> }>();
 
@@ -118,6 +120,29 @@ stripeApp.post('/create-checkout-session', async (c) => {
   }
 });
 
+// Public: a logged-out prospect buys the offer their free audit recommended.
+// Only an offer id comes from the browser; price and product come from OFFERS on the server.
+stripeApp.post('/offer-checkout', async (c) => {
+  const env = c.env as Record<string, string>;
+  if (!env.STRIPE_SECRET_KEY) return c.json({ error: 'Checkout is not available right now.' }, 503);
+  let body: any;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Bad request.' }, 400); }
+  if (!isOfferId(body?.offerId)) return c.json({ error: 'Unknown plan.' }, 400);
+  try {
+    const stripe = getStripe(env);
+    const params = offerCheckoutParams(body.offerId, {
+      siteUrl: (env.PUBLIC_APP_URL || SITE_URL).replace(/\/$/, ''),
+      business: typeof body.business === 'string' ? body.business : '',
+      email: typeof body.email === 'string' ? body.email : '',
+    });
+    const session = await stripe.checkout.sessions.create(params as Stripe.Checkout.SessionCreateParams);
+    return c.json({ url: session.url });
+  } catch (error: any) {
+    console.error('offer-checkout failed:', error?.message);
+    return c.json({ error: 'Checkout is not available right now.' }, 502);
+  }
+});
+
 // Owner-only: AImHighAI's own ad-hoc payment link, not a tenant's lead invoice.
 stripeApp.post('/create-payment-link', async (c) => {
   const env = c.env as Record<string, string>;
@@ -219,7 +244,13 @@ stripeApp.post('/webhook', async (c) => {
       // (stamped in /create-checkout-session, verified server-side, never trusted
       // from client input directly).
       const session = event.data.object as Stripe.Checkout.Session;
-      if (session.mode === 'subscription') {
+      if (session.metadata?.source === 'free-audit') {
+        // A prospect bought from the free audit: no tenant account, so tell the owner.
+        const who = session.customer_details?.email || session.customer_email || 'unknown email';
+        await sendEmail(env, env.OWNER_EMAIL || 'memberebma@gmail.com',
+          `New sale: ${session.metadata.offerId} for ${session.metadata.business || who}`,
+          `<p>A free-audit prospect just paid.</p><p>Plan: <b>${session.metadata.offerId}</b><br>Business: ${(session.metadata.business || '').replace(/[<>&]/g, '')}<br>Email: ${who.replace(/[<>&]/g, '')}<br>Amount: $${((session.amount_total || 0) / 100).toFixed(2)}</p><p>Stripe customer: ${session.customer || ''}</p>`);
+      } else if (session.mode === 'subscription') {
         const blink = serverDb(env);
         await blink.db.subscribers.create({
           id: crypto.randomUUID(),

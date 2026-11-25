@@ -8,7 +8,7 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   var ICON = { good: "✅", warn: "⚠️", bad: "❌" };
 
-  function renderReport(r) {
+  function renderReport(r, email) {
     var el = document.getElementById("audit-result");
     if (!el || !r) return;
     var rows = r.findings.map(function (f) {
@@ -21,13 +21,32 @@
     var o = r.offer;
     var offer = o ? '<div class="card"><h3 style="margin-top:0">Want this fixed for you?</h3><p>Our <b>' + esc(o.name) + "</b> plan: " +
       (o.setupPrice ? "$" + o.setupPrice + " setup + " : "") + "$" + o.monthlyPrice + "/mo. " + esc(o.pitch) + '.</p>' +
-      '<a class="btn" href="mailto:memberebma@gmail.com?subject=' + encodeURIComponent("Set up " + o.name + " for " + r.business) + '">Get this set up →</a></div>' : "";
+      '<button type="button" class="btn" id="buy-offer">Get this set up →</button>' +
+      '<p class="mute" style="font-size:13px;margin-top:8px">Secure checkout by Stripe. Cancel anytime.</p></div>' : "";
+    var mailto = o ? "mailto:memberebma@gmail.com?subject=" + encodeURIComponent("Set up " + o.name + " for " + r.business) : "";
     var today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
     el.innerHTML = '<p class="print-only mute">AImHighAI · Lead Leak Audit · ' + esc(r.city || "") + " · " + today + ' · aimhighai.vercel.app</p>' +
       '<p class="no-print"><button type="button" class="btn" id="print-report">⬇ Save as PDF / Print</button></p>' +
       '<h2>' + esc(r.business) + ': <span class="big">' + r.score + '</span>/100</h2>' +
       (r.found ? "" : "<p>We searched Google Maps and couldn't find you. That's the biggest leak of all.</p>") +
       rows + "<h3>Your top 3 fixes</h3><ol>" + fixes + "</ol>" + comp + offer;
+    var buy = document.getElementById("buy-offer");
+    if (buy) buy.addEventListener("click", async function () {
+      buy.disabled = true; buy.textContent = "Opening secure checkout…";
+      try {
+        var res = await fetch("/api/stripe/offer-checkout", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ offerId: o.id, business: r.business, email: email || "" })
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (res.ok && data.url) { location.href = data.url; return; }
+        throw new Error(data.error || "unavailable");
+      } catch (err) {
+        // Checkout down: fall back to emailing us so the lead isn't lost.
+        location.href = mailto;
+        buy.disabled = false; buy.textContent = "Get this set up →";
+      }
+    });
     document.getElementById("print-report").addEventListener("click", function () {
       // The browser's print window has "Save as PDF" (phones: Share → Save to Files / Print).
       var oldTitle = document.title;
@@ -36,6 +55,17 @@
       setTimeout(function () { document.title = oldTitle; }, 1000);
     });
     el.scrollIntoView({ behavior: "smooth" });
+  }
+
+  // Back from Stripe Checkout.
+  if (params.get("paid") === "1" || params.get("canceled") === "1") {
+    var form0 = document.querySelector("form[data-magnet]");
+    var note = document.createElement("div");
+    note.className = "card"; note.setAttribute("role", "status"); note.style.margin = "0 0 16px";
+    note.innerHTML = params.get("paid") === "1"
+      ? "<b>✅ Payment received. Thank you!</b><br>We'll email you within 1 business day to start setup."
+      : "Checkout was canceled. No charge was made. You can run the audit again anytime.";
+    if (form0 && form0.parentNode) form0.parentNode.insertBefore(note, form0);
   }
 
   document.querySelectorAll("form[data-magnet]").forEach(function (form) {
@@ -70,7 +100,7 @@
         } else {
           msg.textContent = form.dataset.success || "Got it! Check your inbox.";
         }
-        renderReport(data.report);
+        renderReport(data.report, f.get("email"));
         form.reset();
       } catch (err) {
         msg.className = "msg err"; msg.textContent = err.message;

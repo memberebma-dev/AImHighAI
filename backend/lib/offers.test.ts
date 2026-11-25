@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { matchOffer, isFreeOrMissingWebsite, firstYearValue } from "./offers.js";
+import { matchOffer, isFreeOrMissingWebsite, firstYearValue, offerCheckoutParams, isOfferId } from "./offers.js";
 
 // Cases taken from the real Hattiesburg, MS treg search.
 test("no website → site build", () => {
@@ -36,4 +36,30 @@ test("established, not 24h → local SEO management", () => {
 
 test("mid-size healthy profile falls back to review growth", () => {
   assert.equal(matchOffer({ website: "https://a.com", rating: 4.5, reviewCount: 30 }).id, "review_growth");
+});
+
+test("offerCheckoutParams: monthly subscription, setup fee as one-time line", () => {
+  const p = offerCheckoutParams("site_build", { siteUrl: "https://x.app", business: "Joe's", email: "a@b.co" });
+  assert.equal(p.mode, "subscription");
+  assert.equal(p.line_items.length, 2);
+  assert.deepEqual((p.line_items[0] as any).price_data.recurring, { interval: "month" });
+  assert.equal((p.line_items[0] as any).price_data.unit_amount, 4900);
+  assert.equal((p.line_items[1] as any).price_data.unit_amount, 49700);
+  assert.equal((p.line_items[1] as any).price_data.recurring, undefined);
+  assert.equal(p.metadata.source, "free-audit");
+  assert.equal(p.customer_email, "a@b.co");
+  assert.match(p.success_url, /^https:\/\/x\.app\/free-audit\?paid=1/);
+});
+
+test("offerCheckoutParams: no setup line when setup is free; bad email dropped", () => {
+  const p = offerCheckoutParams("missed_call", { siteUrl: "https://x.app", email: "nope" });
+  assert.equal(p.line_items.length, 1);
+  assert.equal((p.line_items[0] as any).price_data.unit_amount, 19700);
+  assert.equal(p.customer_email, undefined);
+});
+
+test("isOfferId only accepts real offers", () => {
+  assert.equal(isOfferId("local_seo"), true);
+  assert.equal(isOfferId("free_money"), false);
+  assert.equal(isOfferId("toString"), false);
 });
