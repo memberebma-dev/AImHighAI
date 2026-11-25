@@ -26,3 +26,18 @@ input,select{width:100%;padding:12px;border-radius:9px;border:1px solid var(--li
 .foot a{color:var(--mute);margin:0 8px}
 blockquote{border-left:4px solid var(--teal);margin:18px 0;padding:6px 16px;color:var(--mute)}
 small.src{color:var(--mute)}
+
+/* Lead Leak Audit: print / save-as-PDF shows only the report */
+.print-only{display:none}
+@media print{
+  html,body{background:#fff !important}
+  body *{visibility:hidden}
+  #audit-result,#audit-result *{visibility:visible}
+  #audit-result{position:absolute;left:0;top:0;width:100%;padding:0 8px}
+  #audit-result,#audit-result *{color:#111 !important;background:transparent !important}
+  #audit-result .big{color:#b45309 !important}
+  #audit-result .print-only{display:block}
+  #audit-result .no-print{display:none}
+  #audit-result .card{break-inside:avoid;border:1px solid #ccc;background:#fff}
+  #audit-result a.btn{border:1px solid #000;color:#000;background:#fff}
+}
