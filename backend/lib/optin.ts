@@ -5,7 +5,7 @@ export type Magnet = (typeof MAGNETS)[number];
 
 export interface OptinInput {
   email?: unknown; name?: unknown; business?: unknown; city?: unknown; phone?: unknown;
-  magnet?: unknown; consent?: unknown; consentText?: unknown; website?: unknown; // `website` is the honeypot
+  magnet?: unknown; consent?: unknown; consentText?: unknown; website?: unknown; hp_extra?: unknown; // honeypots
   source?: unknown; utm?: unknown; details?: unknown;
 }
 
@@ -29,7 +29,7 @@ function cleanObject(v: unknown, maxKeys = 12): Record<string, string | number> 
 
 export function validateOptin(input: OptinInput): OptinResult {
   // Bots fill every field, including the hidden one. Pretend success, store nothing.
-  if (str(input.website, 200)) return { ok: true, bot: true, row: {} };
+  if (str(input.hp_extra, 200)) return { ok: true, bot: true, row: {} };
 
   const email = str(input.email, 254).toLowerCase();
   if (!EMAIL.test(email)) return { ok: false, error: "Please enter a valid email address." };

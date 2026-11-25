@@ -11,7 +11,7 @@ test("accepts a valid opt-in and normalises the email", () => {
 });
 
 test("honeypot filled -> silent success, nothing stored", () => {
-  const r = validateOptin({ ...good, website: "http://spam" });
+  const r = validateOptin({ ...good, hp_extra: "http://spam" });
   assert.equal(r.ok, true);
   if (r.ok) { assert.equal(r.bot, true); assert.deepEqual(r.row, {}); }
 });
@@ -29,4 +29,10 @@ test("utm/details are trimmed to plain strings and numbers", () => {
     assert.deepEqual(r.row.utm, { utm_source: "reddit" });
     assert.deepEqual(r.row.details, { missedCalls: 12 });
   }
+});
+
+test("a browser-autofilled website field is no longer mistaken for a bot", () => {
+  const r = validateOptin({ ...good, website: "https://myplumbing.com" });
+  assert.equal(r.ok, true);
+  if (r.ok) assert.equal(r.bot, false);
 });

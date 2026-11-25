@@ -15,6 +15,7 @@ import { AffiliatesPage } from '@/pages/Affiliates'
 import { InvoiceRemindersPage } from '@/pages/InvoiceReminders'
 import { useBlinkAuth } from '@/lib/auth-context'
 import { LoginForm, SetNewPassword } from '@/components/auth/LoginForm'
+import { Landing } from '@/pages/Landing'
 import { blink } from '@/lib/blink'
 import { Button } from '@/components/ui/button'
 import { Loader2, LogOut, Zap, CheckCircle2, ExternalLink, ShieldAlert } from 'lucide-react'
@@ -83,6 +84,10 @@ function App() {
     )
   }
 
+  if (!isAuthenticated && !recovery && window.location.pathname !== '/login') {
+    return <Landing />
+  }
+
   if (!isAuthenticated || recovery) {
     return (
       <div className="flex min-h-screen bg-slate-950 items-center justify-center p-6">
@@ -112,7 +117,7 @@ function App() {
             </div>
           </div>
           <p className="text-[10px] text-slate-500">
-            Secure login provided by Blink Auth • By accessing you agree to our Terms
+            Secure sign-in by Supabase • By signing in you agree to our <a href="/terms" className="underline hover:text-slate-300">Terms</a> and <a href="/privacy" className="underline hover:text-slate-300">Privacy Policy</a> • <a href="/" className="underline hover:text-slate-300">Back to home</a>
           </p>
         </div>
       </div>
@@ -270,7 +275,7 @@ function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-white">{user?.email || 'Authenticated User'}</p>
-              <p className="text-xs text-slate-500">Authenticated via Blink Auth</p>
+              <p className="text-xs text-slate-500">Signed in securely with Supabase</p>
             </div>
             <Button
               variant="outline"
