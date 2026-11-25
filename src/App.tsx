@@ -17,6 +17,9 @@ import { useBlinkAuth } from '@/lib/auth-context'
 import { LoginForm, SetNewPassword } from '@/components/auth/LoginForm'
 import { Landing } from '@/pages/Landing'
 import { blink } from '@/lib/blink'
+
+// Paths that show the sign-in screen when logged out (and the dashboard once signed in).
+const APP_PATHS = new Set(['/login', '/sign-in', '/signin', '/dashboard', '/app'])
 import { Button } from '@/components/ui/button'
 import { Loader2, LogOut, Zap, CheckCircle2, ExternalLink, ShieldAlert } from 'lucide-react'
 import { toast } from 'sonner'
@@ -84,7 +87,7 @@ function App() {
     )
   }
 
-  if (!isAuthenticated && !recovery && window.location.pathname !== '/login') {
+  if (!isAuthenticated && !recovery && !APP_PATHS.has(window.location.pathname.replace(/\/$/, ''))) {
     return <Landing />
   }
 

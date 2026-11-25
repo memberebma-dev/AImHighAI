@@ -23,7 +23,7 @@ export interface OfferSignals {
   open24h?: boolean | null;
 }
 
-const OFFERS: Record<OfferId, Omit<Offer, "reason">> = {
+export const OFFERS: Record<OfferId, Omit<Offer, "reason">> = {
   site_build: {
     id: "site_build", name: "Website build + monthly care", setupPrice: 497, monthlyPrice: 49,
     pitch: "a professional website built in 7 days, plus hosting and updates every month",
@@ -74,4 +74,44 @@ export function matchOffer(s: OfferSignals): Offer {
 /** First-year value of an offer, used as the lead's potential services value. */
 export function firstYearValue(o: Pick<Offer, "setupPrice" | "monthlyPrice">): number {
   return o.setupPrice + o.monthlyPrice * 12;
+}
+
+export function isOfferId(id: unknown): id is OfferId {
+  return typeof id === "string" && Object.prototype.hasOwnProperty.call(OFFERS, id);
+}
+
+/**
+ * Stripe Checkout settings for a public (logged-out) offer purchase from the free audit.
+ * Prices always come from OFFERS on the server, never from the browser. Monthly price is a
+ * subscription; setupPrice is a one-time line on the first invoice.
+ */
+export function offerCheckoutParams(offerId: OfferId, opts: { siteUrl: string; business?: string; email?: string }) {
+  const o = OFFERS[offerId];
+  const business = (opts.business || "").slice(0, 120);
+  const line_items: Array<Record<string, unknown>> = [{
+    quantity: 1,
+    price_data: {
+      currency: "usd",
+      unit_amount: o.monthlyPrice * 100,
+      recurring: { interval: "month" },
+      product_data: { name: `AImHighAI: ${o.name}` },
+    },
+  }];
+  if (o.setupPrice > 0) {
+    line_items.push({
+      quantity: 1,
+      price_data: { currency: "usd", unit_amount: o.setupPrice * 100, product_data: { name: `${o.name}: one-time setup` } },
+    });
+  }
+  const metadata = { source: "free-audit", offerId, business };
+  return {
+    mode: "subscription" as const,
+    line_items,
+    customer_email: opts.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(opts.email) ? opts.email : undefined,
+    success_url: `${opts.siteUrl}/free-audit?paid=1&offer=${offerId}`,
+    cancel_url: `${opts.siteUrl}/free-audit?canceled=1`,
+    allow_promotion_codes: true,
+    metadata,
+    subscription_data: { metadata },
+  };
 }
