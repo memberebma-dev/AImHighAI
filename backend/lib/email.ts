@@ -3,8 +3,12 @@
 /** Public site link used in email footers. */
 export const SITE_URL = (process.env.PUBLIC_APP_URL || "https://aimhighai.vercel.app").replace(/\/$/, "");
 
-/** Sender address. The domain must be verified in SendGrid/Resend; set EMAIL_FROM_ADDRESS to override. */
-const FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || "pipeline@aimhighai.net";
+/**
+ * Sender address. We don't own a domain yet (only aimhighai.vercel.app), so we use
+ * Resend's built-in sender, which can only deliver to the Resend account owner's inbox.
+ * Once a real domain is verified in Resend, set EMAIL_FROM_ADDRESS (e.g. hello@yourdomain.com).
+ */
+const FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || "onboarding@resend.dev";
 const FROM_NAME = "AImHighAI";
 
 export async function sendEmail(

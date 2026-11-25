@@ -29,5 +29,5 @@ The keys pasted into chat on Nov 2026 (Stripe live secret + restricted, OpenAI, 
 
 ## Still to do
 - Add Vercel Firewall rate limit on `/api/optin` (Vercel → Firewall → Add rule: path `/api/optin`, 10 requests / minute / IP).
-- Set up a business inbox (e.g. hello@aimhighai.net) and swap it in for the personal email on the legal pages.
+- Set up a business inbox (needs a domain you own first — only aimhighai.vercel.app exists today) and swap it in for the personal email on the legal pages.
 - Have a lawyer review the Privacy Policy and Terms before heavy paid traffic.
