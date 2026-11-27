@@ -41,3 +41,8 @@ small.src{color:var(--mute)}
   #audit-result .card{break-inside:avoid;border:1px solid #ccc;background:#fff}
   #audit-result a.btn{border:1px solid #000;color:#000;background:#fff}
 }
+
+/* Loading spinner for waits (audit check, checkout redirect) */
+.spin{display:inline-block;width:1em;height:1em;margin-right:.5em;vertical-align:-.15em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
