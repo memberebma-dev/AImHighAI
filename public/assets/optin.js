@@ -32,7 +32,7 @@
       rows + "<h3>Your top 3 fixes</h3><ol>" + fixes + "</ol>" + comp + offer;
     var buy = document.getElementById("buy-offer");
     if (buy) buy.addEventListener("click", async function () {
-      buy.disabled = true; buy.textContent = "Opening secure checkout…";
+      buy.disabled = true; buy.innerHTML = '<span class="spin" aria-hidden="true"></span>Opening secure checkout…';
       try {
         var res = await fetch("/api/stripe/offer-checkout", {
           method: "POST", headers: { "Content-Type": "application/json" },
@@ -89,7 +89,7 @@
       };
       var isAudit = form.dataset.magnet === "lead-leak-audit";
       btn.disabled = true; msg.className = "msg";
-      msg.textContent = isAudit ? "Checking Google Maps, reviews and competitors… (about 30 seconds)" : "Sending…";
+      msg.innerHTML = '<span class="spin" aria-hidden="true"></span>' + (isAudit ? "Checking Google Maps, reviews and competitors… (about 30 seconds)" : "Sending…");
       try {
         var r = await fetch("/api/optin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         var data = await r.json().catch(function () { return {}; });
